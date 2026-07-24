@@ -129,14 +129,15 @@ main {
 
 .workspace-layout {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) 250px 360px minmax(320px, 1fr);
+  grid-template-columns: minmax(350px, 600px) 250px 360px minmax(350px, 600px);
   gap: 1.25rem;
   align-items: start;
+  justify-content: center;
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1500px) {
   .workspace-layout {
-    grid-template-columns: minmax(260px, 1fr) 220px 300px minmax(260px, 1fr);
+    grid-template-columns: minmax(280px, 1fr) 220px 300px minmax(280px, 1fr);
   }
 }
 
@@ -219,6 +220,8 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
 #show-all-regions-btn {

@@ -33,6 +33,7 @@ const showAllBtn = document.getElementById('show-all-regions-btn');
 
 // --- State ---
 let currentImageData = null;
+let _imageData = null, _fileName = '', _fileSize = 0;
 const effectStrengths = {};
 const effectEnabled = {};
 const effectRegions = {};
@@ -237,6 +238,12 @@ setupUpload(dropZone, fileInput,
       effectRegions[e.id] = { x: 0, y: 0, w: imageData.width, h: imageData.height };
     }
 
+    // Keep overlay aligned when the window or layout resizes.
+    // Store image dims so the resize handler can recompute display coords.
+    _imageData = imageData;
+    _fileName = fileName;
+    _fileSize = fileSize;
+
     imageInfo.textContent = `${fileName} — ${imageData.width}×${imageData.height}`;
     output.clear();
     statusMsg.textContent = '';
@@ -293,4 +300,13 @@ resetBtn.addEventListener('click', () => {
   }
   updateAllOverlays();
   statusMsg.textContent = '';
+});
+
+// --- Keep overlay aligned on window / layout resize ---
+window.addEventListener('resize', () => {
+  if (!_imageData) return;
+  const dw = inputContainer.clientWidth;
+  if (dw > 0) {
+    regions.updateImage(_imageData.width, _imageData.height, dw, _imageData.height * (dw / _imageData.width));
+  }
 });
