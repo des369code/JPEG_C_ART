@@ -106,23 +106,6 @@ for (const effect of registry) {
 
   body.appendChild(slider);
 
-  // Region inputs for non-full-frame effects
-  if (!isFullFrame) {
-    const regionRow = document.createElement('div');
-    regionRow.className = 'effect-region-row';
-    regionRow.innerHTML = `
-      <span class="effect-region-label">Region:</span>
-      <span class="effect-region-values" id="region-display-${effect.id}">Full image</span>
-      <button class="effect-region-btn" data-effect="${effect.id}">Edit region</button>
-    `;
-    regionRow.querySelector('.effect-region-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      regions.setActiveEffect(effect.id);
-      updateRegionInputsVisibility(effect.id);
-    });
-    body.appendChild(regionRow);
-  }
-
   // Toggle
   const toggleEffect = () => {
     const wasEnabled = effectEnabled[effect.id];
@@ -131,7 +114,8 @@ for (const effect of registry) {
     body.style.display = effectEnabled[effect.id] ? '' : 'none';
     card.classList.toggle('effect-card--enabled', effectEnabled[effect.id]);
 
-    if (effectEnabled[effect.id] && !wasEnabled) {
+    if (effectEnabled[effect.id]) {
+      // Always activate region when enabling an effect
       regions.setActiveEffect(effect.id);
       updateRegionInputsVisibility(effect.id);
     }
@@ -141,6 +125,21 @@ for (const effect of registry) {
 
   toggle.addEventListener('click', toggleEffect);
   name.addEventListener('click', toggleEffect);
+
+  header.addEventListener('click', (e) => {
+    // Don't toggle if clicking slider or other interactive elements
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    const wasEnabled = effectEnabled[effect.id];
+    if (!wasEnabled) {
+      // Enable it
+      toggleEffect();
+    } else {
+      // Already enabled — just activate its region
+      regions.setActiveEffect(effect.id);
+      updateRegionInputsVisibility(effect.id);
+      updateAllOverlays();
+    }
+  });
 
   card.appendChild(header);
   card.appendChild(body);

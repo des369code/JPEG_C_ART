@@ -1,27 +1,30 @@
-# Task 1 Report: Pipeline Infrastructure
+# Task 1 Report: Single Overlay Mode + Card Click Fix
 
 **Status:** Complete
 
-## Files Created
-- `js/effects/registry.js` — Master registry of all 10 effects in pipeline order (4 lens, 2 focus, 3 sensor, 1 compression)
-- `js/effects/pipeline.js` — Runner that iterates enabled effects and produces a JPEG blob via `canvas.toBlob`
+## Changes Made
+
+### `js/ui/region.js`
+- Added `showAllOverlays` flag (default `false`) for single-overlay mode
+- Updated `renderAll()` to only show the active effect's colored overlay when `showAllOverlays` is `false` (hides all others). In "show all" mode, overlays render as dashed and non-interactive (`pointerEvents: none`)
+- Added `toggleShowAll()` method to the public API (flips the flag, re-renders, returns new boolean state)
+
+### `js/app.js`
+- Removed the "Edit region" button and its `regionRow` from effect card bodies
+- Updated `toggleEffect()` to always call `regions.setActiveEffect()` on enable (removed the `!wasEnabled` guard), so switching effects activates the new effect's region
+- Added `header.addEventListener('click')`: when an already-enabled card header is clicked, it activates that effect's region without toggling it off; when a disabled card is clicked, it enables the effect and activates the region
+
+## Key Behavior
+- Enable an effect -> only that effect's colored overlay shows on the input canvas
+- Switch to another effect -> old overlay disappears, new one appears
+- "Show all regions" -> all enabled overlays display as dashed, read-only overlays
+- No "Edit region" button anywhere -> clicking the card header activates the region
 
 ## Verification
-- `node --check js/effects/pipeline.js` — PASS
-- `node --check js/effects/registry.js` — PASS (imports not resolved by static check; expected failures at runtime until Tasks 2-5)
+- `node --check js/ui/region.js` passed
+- `node --check js/app.js` passed
 
-## Key Interfaces Produced
-- `registry` — array of effect objects in fixed pipeline order
-- `applyEffects(imageData, enabledIds, strengths, region) → Promise<Blob>` — async pipeline runner
-
-## Notes
-- Uses `clamp` from `js/utils.js` (already existed)
-- Import errors on registry.js are expected — the 10 effect files (`vignette.js`, `edge-softness.js`, `chromatic-aberration.js`, `lens-flare.js`, `soft-focus.js`, `motion-blur.js`, `iso-grain.js`, `dead-pixels.js`, `dust-spots.js`, `jpeg-artifacts.js`) don't exist yet
-- Each effect is skipped if `strength <= 0`, not in `enabledIds`, or throws an error
-- Output JPEG quality is hardcoded at 0.92
-
-## Commits
-1. `feat: add effects pipeline infrastructure — registry + ordered runner`
-
-## Concerns
-None.
+## Files Modified
+- `/Users/d.desmaanzephyll/Desktop/JPEG_C_ART/js/ui/region.js`
+- `/Users/d.desmaanzephyll/Desktop/JPEG_C_ART/js/app.js`
+- `/Users/d.desmaanzephyll/Desktop/JPEG_C_ART/.superpowers/sdd/task-1-report.md`

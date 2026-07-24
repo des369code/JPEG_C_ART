@@ -35,6 +35,7 @@ export function setupRegions(container, inputs) {
   let dragging = false, resizing = false;
   let dragStart = { x: 0, y: 0 };
   let dragRegion = { x: 0, y: 0, w: 0, h: 0 };
+  let showAllOverlays = false;
 
   function toDisplay(r) {
     const sx = displayW / imageW;
@@ -115,6 +116,11 @@ export function setupRegions(container, inputs) {
         els.handle.style.display = 'none';
         continue;
       }
+      // When not showing all, only render the active effect's overlay
+      if (!showAllOverlays && id !== activeId) {
+        els.handle.style.display = 'none';
+        continue;
+      }
       const r = regions[id];
       if (!r) continue;
       const d = toDisplay(r);
@@ -123,11 +129,13 @@ export function setupRegions(container, inputs) {
       els.handle.style.top = `${d.y}px`;
       els.handle.style.width = `${d.w}px`;
       els.handle.style.height = `${d.h}px`;
-      els.handle.style.borderStyle = id === activeId ? 'solid' : 'dashed';
+      // All solid when showing all (read-only viz), or solid for active when editing
+      els.handle.style.borderStyle = showAllOverlays ? 'dashed' : 'solid';
+      els.handle.style.pointerEvents = showAllOverlays ? 'none' : 'auto';
     }
 
-    // Sync inputs to active effect
-    if (activeId && regions[activeId]) {
+    // Sync inputs to active effect (only when editing, not in showAll mode)
+    if (!showAllOverlays && activeId && regions[activeId]) {
       const ar = regions[activeId];
       inputs.left.value = ar.x;
       inputs.top.value = ar.y;
@@ -188,6 +196,12 @@ export function setupRegions(container, inputs) {
         regions[id] = { x: 0, y: 0, w: imageW, h: imageH };
       }
       renderAll();
+    },
+
+    toggleShowAll() {
+      showAllOverlays = !showAllOverlays;
+      renderAll();
+      return showAllOverlays;
     },
   };
 }
