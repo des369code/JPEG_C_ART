@@ -45,41 +45,43 @@
           <p id="image-info" class="info-text"></p>
         </div>
 
-        <!-- Region Panel -->
-        <div class="panel region-panel">
-          <h2>Region</h2>
-          <div class="control-group">
-            <label for="region-left">Left offset</label>
-            <input type="number" id="region-left" value="0" min="0">
+        <!-- Sidebar: Effects + Region stacked -->
+        <div class="panel sidebar-panel">
+          <!-- Effects -->
+          <div class="sidebar-section">
+            <h2>Effects</h2>
+            <div id="effects-list"></div>
+            <div class="effects-divider"></div>
+            <div class="presets-row">
+              <select id="preset-select"></select>
+              <button id="preset-apply" class="btn-secondary">Apply preset</button>
+            </div>
+            <button id="apply-btn" class="btn-primary">Apply effects</button>
+            <button id="reset-btn" class="btn-secondary">Reset all</button>
+            <p id="status-msg" class="info-text"></p>
           </div>
-          <div class="control-group">
-            <label for="region-top">Top offset</label>
-            <input type="number" id="region-top" value="0" min="0">
-          </div>
-          <div class="control-group">
-            <label for="region-width">Width</label>
-            <input type="number" id="region-width" value="200" min="1">
-          </div>
-          <div class="control-group">
-            <label for="region-height">Height</label>
-            <input type="number" id="region-height" value="200" min="1">
-          </div>
-          <div class="effects-divider"></div>
-          <button id="show-all-regions-btn" class="btn-secondary">Show all regions</button>
-        </div>
 
-        <!-- Effects Panel -->
-        <div class="panel effects-panel">
-          <h2>Effects</h2>
-          <div id="effects-list"></div>
-          <div class="effects-divider"></div>
-          <div class="presets-row">
-            <select id="preset-select"></select>
-            <button id="preset-apply" class="btn-secondary">Apply preset</button>
+          <!-- Region -->
+          <div class="sidebar-section">
+            <h2>Region</h2>
+            <div class="control-group">
+              <label for="region-left">Left offset</label>
+              <input type="number" id="region-left" value="0" min="0">
+            </div>
+            <div class="control-group">
+              <label for="region-top">Top offset</label>
+              <input type="number" id="region-top" value="0" min="0">
+            </div>
+            <div class="control-group">
+              <label for="region-width">Width</label>
+              <input type="number" id="region-width" value="200" min="1">
+            </div>
+            <div class="control-group">
+              <label for="region-height">Height</label>
+              <input type="number" id="region-height" value="200" min="1">
+            </div>
+            <button id="show-all-regions-btn" class="btn-secondary">Show all regions</button>
           </div>
-          <button id="apply-btn" class="btn-primary">Apply effects</button>
-          <button id="reset-btn" class="btn-secondary">Reset all</button>
-          <p id="status-msg" class="info-text"></p>
         </div>
 
         <!-- Output Panel -->
