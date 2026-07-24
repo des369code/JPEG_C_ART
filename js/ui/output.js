@@ -28,23 +28,20 @@ export function setupOutput(previewCanvas, downloadBtn, sizeEl, zoomOverlay, zoo
   previewCanvas.addEventListener('click', () => {
     if (!currentBlob) return;
     const url = URL.createObjectURL(currentBlob);
+    // Set onload BEFORE src to avoid race condition
+    zoomImage.onload = () => URL.revokeObjectURL(url);
+    zoomImage.onerror = () => URL.revokeObjectURL(url);
     zoomImage.src = url;
     zoomOverlay.classList.remove('hidden');
-    // Revoke after the image loads to avoid holding stale blob URLs
-    zoomImage.onload = () => URL.revokeObjectURL(url);
   });
 
-  // Click overlay background or close button → dismiss
+  // Click anywhere on overlay (background, image, or close button) → dismiss
   function closeZoom() {
     zoomOverlay.classList.add('hidden');
     zoomImage.src = '';
   }
 
-  zoomOverlay.addEventListener('click', (e) => {
-    if (e.target === zoomOverlay || e.target.classList.contains('zoom-close')) {
-      closeZoom();
-    }
-  });
+  zoomOverlay.addEventListener('click', closeZoom);
 
   // Escape key → dismiss
   document.addEventListener('keydown', (e) => {
