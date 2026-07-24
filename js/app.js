@@ -69,6 +69,8 @@ for (const effect of registry) {
   const card = document.createElement('div');
   card.className = 'effect-card';
   card.dataset.effectId = effect.id;
+  card.style.setProperty('--effect-color', getColor(effect.id));
+  card.style.setProperty('--i', registry.indexOf(effect));
 
   // Header row
   const header = document.createElement('div');
@@ -76,12 +78,11 @@ for (const effect of registry) {
 
   const toggle = document.createElement('span');
   toggle.className = 'effect-toggle';
-  toggle.textContent = '○';
   toggle.title = 'Toggle effect';
 
   const dot = document.createElement('span');
   dot.className = 'effect-dot';
-  dot.style.cssText = `background:${getColor(effect.id)};width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0;`;
+  dot.style.cssText = `background:${getColor(effect.id)};width:6px;height:6px;border-radius:50%;flex-shrink:0;`;
 
   const name = document.createElement('span');
   name.className = 'effect-card-name';
@@ -131,7 +132,6 @@ for (const effect of registry) {
   // When enabling, the region overlay is activated automatically.
   const toggleEffect = () => {
     effectEnabled[effect.id] = !effectEnabled[effect.id];
-    toggle.textContent = effectEnabled[effect.id] ? '●' : '○';
     body.style.display = effectEnabled[effect.id] ? '' : 'none';
     card.classList.toggle('effect-card--enabled', effectEnabled[effect.id]);
 
@@ -207,7 +207,6 @@ presetApply.addEventListener('click', () => {
   for (const card of effectsList.querySelectorAll('.effect-card')) {
     const id = card.dataset.effectId;
     const enabled = effectEnabled[id];
-    card.querySelector('.effect-toggle').textContent = enabled ? '●' : '○';
     card.querySelector('.effect-card-body').style.display = enabled ? '' : 'none';
     card.classList.toggle('effect-card--enabled', enabled);
     const slider = card.querySelector('.effect-slider');
@@ -292,7 +291,6 @@ resetBtn.addEventListener('click', () => {
   }
   for (const card of effectsList.querySelectorAll('.effect-card')) {
     const id = card.dataset.effectId;
-    card.querySelector('.effect-toggle').textContent = '○';
     card.querySelector('.effect-card-body').style.display = 'none';
     card.classList.remove('effect-card--enabled');
     const slider = card.querySelector('.effect-slider');
