@@ -50,7 +50,7 @@ export function setupRegions(container, inputs) {
 
     const resize = document.createElement('div');
     resize.className = 'effect-overlay-resize';
-    resize.style.cssText = `position:absolute;bottom:-5px;right:-5px;width:10px;height:10px;background:${color};cursor:nwse-resize;pointer-events:auto;`;
+    resize.style.cssText = `position:absolute;bottom:0;right:0;width:14px;height:14px;background:${color};cursor:nwse-resize;pointer-events:auto;border-radius:0 0 2px 0;`;
 
     handle.appendChild(resize);
 
