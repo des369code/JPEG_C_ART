@@ -115,6 +115,17 @@ for (const effect of registry) {
 
   body.appendChild(slider);
 
+  // Percentage label
+  const pctLabel = document.createElement('span');
+  pctLabel.className = 'effect-pct';
+  pctLabel.textContent = `${effect.defaultStrength}%`;
+  body.appendChild(pctLabel);
+
+  slider.addEventListener('input', () => {
+    effectStrengths[effect.id] = parseInt(slider.value);
+    pctLabel.textContent = `${slider.value}%`;
+  });
+
   // Toggle
   const toggleEffect = () => {
     const wasEnabled = effectEnabled[effect.id];

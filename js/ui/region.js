@@ -6,7 +6,6 @@ import { clamp } from '../utils.js';
 const OVERLAY_COLORS = {
   'motion-blur':          '#ff6b6b',
   'soft-focus':           '#ffd93d',
-  'chromatic-aberration': '#6bcb77',
   'iso-grain':            '#4d96ff',
   'dead-pixels':          '#ff922b',
   'dust-spots':           '#cc5de8',
@@ -56,14 +55,14 @@ export function setupRegions(container, inputs) {
     handle.appendChild(resize);
 
     handle.addEventListener('mousedown', (e) => {
+      setActiveEffect(effectId);  // ALWAYS set active, for both drag and resize
       if (e.target === resize) {
         resizing = true;
       } else {
         dragging = true;
-        setActiveEffect(effectId);
       }
       dragStart = { x: e.clientX, y: e.clientY };
-      dragRegion = { ...(regions[activeId] || { x: 0, y: 0, w: 200, h: 200 }) };
+      dragRegion = { ...(regions[effectId] || regions[activeId] || { x: 0, y: 0, w: 200, h: 200 }) };
       e.preventDefault();
       e.stopPropagation();
     });
