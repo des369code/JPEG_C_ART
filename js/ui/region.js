@@ -1,176 +1,193 @@
-/** Canvas overlay with draggable, resizable rectangle region selector */
+/** Multi-overlay region selector — one colored handle per effect. */
 
 import { clamp } from '../utils.js';
 
+/** Colors assigned to each effect for overlay rendering. */
+const OVERLAY_COLORS = {
+  'motion-blur':          '#ff6b6b',
+  'soft-focus':           '#ffd93d',
+  'chromatic-aberration': '#6bcb77',
+  'iso-grain':            '#4d96ff',
+  'dead-pixels':          '#ff922b',
+  'dust-spots':           '#cc5de8',
+  'jpeg-artifacts':       '#20c997',
+};
+
 /**
- * Set up a draggable region selector overlay on a canvas container.
- * The canvas should already display the loaded image.
- *
- * @param {HTMLElement} container — element wrapping the canvas
- * @param {Object} inputs — numeric input elements for left, top, width, height
- * @returns {Object} — { getRegion, setRegion, onRegionChanged, updateCanvas(canvas) }
+ * Set up per-effect region overlays on a canvas container.
+ * @param {HTMLElement} container
+ * @param {Object} inputs — {left, top, width, height} HTMLInputElements
  */
-export function setupRegion(container, inputs) {
-  let region = { x: 0, y: 0, w: 200, h: 200 };
-  let imageW = 1, imageH = 1; // natural image dimensions
-  let displayW = 1, displayH = 1; // display size
-  let dragging = false;
-  let resizing = false;
-  let dragStart = { x: 0, y: 0 };
-  let dragRegion = { x: 0, y: 0, w: 0, h: 0 };
+export function setupRegions(container, inputs) {
+  const regions = {};       // { effectId: {x,y,w,h} }
+  let activeId = null;      // currently editable effect
+  let overlays = {};        // { effectId: { handle, resizeHandle } }
+  let enabledEffects = {};  // { effectId: boolean }
+  let imageW = 1, imageH = 1, displayW = 1, displayH = 1;
   let listeners = [];
 
-  // Create overlay div for the selection rectangle
-  const overlay = document.createElement('div');
-  overlay.className = 'region-overlay';
-  overlay.style.cssText = `
-    position: absolute; top: 0; left: 0;
-    pointer-events: none; z-index: 10;
-  `;
+  const overlayContainer = document.createElement('div');
+  overlayContainer.className = 'region-overlay';
   container.style.position = 'relative';
-  container.appendChild(overlay);
+  container.appendChild(overlayContainer);
 
-  // Create draggable/resizable handle — styled via CSS classes
-  const handle = document.createElement('div');
-  handle.className = 'region-handle';
+  // Dragging state
+  let dragging = false, resizing = false;
+  let dragStart = { x: 0, y: 0 };
+  let dragRegion = { x: 0, y: 0, w: 0, h: 0 };
 
-  // Resize handle (bottom-right corner)
-  const resizeHandle = document.createElement('div');
-  resizeHandle.className = 'resize-handle';
-  handle.appendChild(resizeHandle);
-
-  overlay.appendChild(handle);
-
-  /** Map region coords from image space to display space */
-  function toDisplay() {
+  function toDisplay(r) {
     const sx = displayW / imageW;
     const sy = displayH / imageH;
-    return {
-      x: region.x * sx,
-      y: region.y * sy,
-      w: region.w * sx,
-      h: region.h * sy,
-    };
+    return { x: r.x * sx, y: r.y * sy, w: r.w * sx, h: r.h * sy };
   }
 
-  /** Map display coords back to image space */
-  function toImage(displayX, displayY, displayW, displayH) {
-    const sx = imageW / displayW;
-    const sy = imageH / displayH;
-    return {
-      x: Math.round(clamp(displayX * sx, 0, imageW)),
-      y: Math.round(clamp(displayY * sy, 0, imageH)),
-      w: Math.round(clamp(displayW * sx, 1, imageW)),
-      h: Math.round(clamp(displayH * sy, 1, imageH)),
-    };
+  function createHandle(effectId, color) {
+    const handle = document.createElement('div');
+    handle.className = 'effect-overlay-handle';
+    handle.style.cssText = `position:absolute;border:2px solid ${color};cursor:move;pointer-events:auto;`;
+    handle.dataset.effectId = effectId;
+
+    const resize = document.createElement('div');
+    resize.className = 'effect-overlay-resize';
+    resize.style.cssText = `position:absolute;bottom:-5px;right:-5px;width:10px;height:10px;background:${color};cursor:nwse-resize;pointer-events:auto;`;
+
+    handle.appendChild(resize);
+
+    handle.addEventListener('mousedown', (e) => {
+      if (e.target === resize) {
+        resizing = true;
+      } else {
+        dragging = true;
+        setActiveEffect(effectId);
+      }
+      dragStart = { x: e.clientX, y: e.clientY };
+      dragRegion = { ...(regions[activeId] || { x: 0, y: 0, w: 200, h: 200 }) };
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    return { handle, resize };
   }
 
-  /** Update handle position and size */
-  function render() {
-    const d = toDisplay();
-    handle.style.left = `${d.x}px`;
-    handle.style.top = `${d.y}px`;
-    handle.style.width = `${d.w}px`;
-    handle.style.height = `${d.h}px`;
-
-    // Sync numeric inputs
-    inputs.left.value = region.x;
-    inputs.top.value = region.y;
-    inputs.width.value = region.w;
-    inputs.height.value = region.h;
-  }
-
-  /** Notify listeners of region change */
-  function notify() {
-    for (const fn of listeners) fn({ ...region });
-  }
-
-  // --- Mouse events for drag ---
-
-  handle.addEventListener('mousedown', (e) => {
-    if (e.target === resizeHandle) {
-      resizing = true;
-    } else {
-      dragging = true;
-    }
-    dragStart = { x: e.clientX, y: e.clientY };
-    dragRegion = { ...region };
-    e.preventDefault();
-  });
-
+  // Global mouse events
   window.addEventListener('mousemove', (e) => {
     if (!dragging && !resizing) return;
-
+    if (!activeId) return;
     const dx = e.clientX - dragStart.x;
     const dy = e.clientY - dragStart.y;
     const sx = imageW / displayW;
     const sy = imageH / displayH;
+    const r = { ...(regions[activeId] || { x: 0, y: 0, w: 200, h: 200 }) };
 
     if (dragging) {
-      region.x = Math.round(clamp(dragRegion.x + dx * sx, 0, imageW - region.w));
-      region.y = Math.round(clamp(dragRegion.y + dy * sy, 0, imageH - region.h));
+      r.x = Math.round(clamp(dragRegion.x + dx * sx, 0, imageW - r.w));
+      r.y = Math.round(clamp(dragRegion.y + dy * sy, 0, imageH - r.h));
     } else if (resizing) {
-      region.w = Math.round(clamp(dragRegion.w + dx * sx, 10, imageW - region.x));
-      region.h = Math.round(clamp(dragRegion.h + dy * sy, 10, imageH - region.y));
+      r.w = Math.round(clamp(dragRegion.w + dx * sx, 10, imageW - r.x));
+      r.h = Math.round(clamp(dragRegion.h + dy * sy, 10, imageH - r.y));
     }
 
-    render();
+    regions[activeId] = r;
+    renderAll();
     notify();
   });
 
-  window.addEventListener('mouseup', () => {
-    dragging = false;
-    resizing = false;
-  });
+  window.addEventListener('mouseup', () => { dragging = false; resizing = false; });
 
-  // --- Numeric input sync ---
+  // Numeric input sync — controls the active effect
   for (const key of ['left', 'top', 'width', 'height']) {
     const input = inputs[key];
     input.addEventListener('input', () => {
+      if (!activeId) return;
       const mapKey = key === 'left' ? 'x' : key === 'top' ? 'y' : key === 'width' ? 'w' : 'h';
-      region[mapKey] = clamp(parseInt(input.value) || 0, 0, mapKey === 'w' ? imageW : mapKey === 'h' ? imageH : 99999);
-      render();
+      const r = regions[activeId] || { x: 0, y: 0, w: 200, h: 200 };
+      r[mapKey] = clamp(parseInt(input.value) || 0, 0, mapKey === 'w' ? imageW : mapKey === 'h' ? imageH : 99999);
+      regions[activeId] = r;
+      renderAll();
       notify();
     });
   }
 
+  function renderAll() {
+    for (const [id, els] of Object.entries(overlays)) {
+      if (!enabledEffects[id]) {
+        els.handle.style.display = 'none';
+        continue;
+      }
+      const r = regions[id];
+      if (!r) continue;
+      const d = toDisplay(r);
+      els.handle.style.display = '';
+      els.handle.style.left = `${d.x}px`;
+      els.handle.style.top = `${d.y}px`;
+      els.handle.style.width = `${d.w}px`;
+      els.handle.style.height = `${d.h}px`;
+      els.handle.style.borderStyle = id === activeId ? 'solid' : 'dashed';
+    }
+
+    // Sync inputs to active effect
+    if (activeId && regions[activeId]) {
+      const ar = regions[activeId];
+      inputs.left.value = ar.x;
+      inputs.top.value = ar.y;
+      inputs.width.value = ar.w;
+      inputs.height.value = ar.h;
+    }
+  }
+
+  function notify() {
+    for (const fn of listeners) fn(activeId, { ...regions });
+  }
+
   return {
-    /** Get current region in image coordinates */
-    getRegion() {
-      return { ...region };
+    getRegion(id) { return { ...(regions[id] || { x: 0, y: 0, w: imageW, h: imageH }) }; },
+
+    setRegion(id, r) {
+      regions[id] = { x: r.x ?? 0, y: r.y ?? 0, w: r.w ?? imageW, h: r.h ?? imageH };
     },
 
-    /** Set region from image coordinates */
-    setRegion(r) {
-      region = {
-        x: clamp(r.x ?? 0, 0, imageW - 1),
-        y: clamp(r.y ?? 0, 0, imageH - 1),
-        w: clamp(r.w ?? 200, 1, imageW),
-        h: clamp(r.h ?? 200, 1, imageH),
-      };
-      render();
+    setActiveEffect(id) {
+      activeId = id;
+      renderAll();
       notify();
     },
 
-    /** Update when a new image is loaded */
+    getActiveEffect() { return activeId; },
+
+    /**
+     * Update which effects are enabled, their colors, and their regions.
+     * @param {Array<{id:string, enabled:boolean, region:{x,y,w,h}}>} states
+     */
+    updateOverlays(states) {
+      for (const s of states) {
+        enabledEffects[s.id] = s.enabled;
+        if (!regions[s.id]) regions[s.id] = s.region;
+        if (!overlays[s.id] && OVERLAY_COLORS[s.id]) {
+          overlays[s.id] = createHandle(s.id, OVERLAY_COLORS[s.id]);
+          overlayContainer.appendChild(overlays[s.id].handle);
+        }
+      }
+      if (activeId && !enabledEffects[activeId]) {
+        // Active effect was disabled — switch to first enabled
+        const next = states.find(s => s.enabled);
+        activeId = next ? next.id : null;
+      }
+      renderAll();
+    },
+
+    onRegionChanged(fn) { listeners.push(fn); },
+
     updateImage(naturalW, naturalH, displayW_, displayH_) {
       imageW = naturalW;
       imageH = naturalH;
       displayW = displayW_;
       displayH = displayH_;
-      // Default region: center 50% of image
-      region = {
-        x: Math.round(imageW * 0.25),
-        y: Math.round(imageH * 0.25),
-        w: Math.round(imageW * 0.5),
-        h: Math.round(imageH * 0.5),
-      };
-      render();
-    },
-
-    /** Listen for region changes */
-    onRegionChanged(fn) {
-      listeners.push(fn);
+      // Default all regions to full image
+      for (const id of Object.keys(OVERLAY_COLORS)) {
+        regions[id] = { x: 0, y: 0, w: imageW, h: imageH };
+      }
+      renderAll();
     },
   };
 }
