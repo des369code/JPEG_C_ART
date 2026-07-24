@@ -30,6 +30,8 @@ const outputSize = document.getElementById('output-size');
 const zoomOverlay = document.getElementById('zoom-overlay');
 const zoomImage = document.getElementById('zoom-image');
 const showAllBtn = document.getElementById('show-all-regions-btn');
+const reuploadBtn = document.getElementById('reupload-btn');
+const uploadSection = document.getElementById('upload-section');
 
 // --- State ---
 let currentImageData = null;
@@ -287,13 +289,72 @@ presetApply.addEventListener('click', () => {
   if (firstEnabled) regions.setActiveEffect(firstEnabled.id);
 });
 
+// --- Re-upload ---
+reuploadBtn.addEventListener('click', () => {
+  // Reset all state
+  currentImageData = null;
+  _imageData = null;
+  _fileName = '';
+  _fileSize = 0;
+  for (const e of registry) {
+    effectEnabled[e.id] = false;
+    effectStrengths[e.id] = e.defaultStrength;
+    if (e.extraParams) {
+      if (!effectExtraParams[e.id]) effectExtraParams[e.id] = {};
+      for (const [key, p] of Object.entries(e.extraParams)) {
+        effectExtraParams[e.id][key] = p.default;
+      }
+    }
+  }
+  // Reset UI cards
+  for (const card of effectsList.querySelectorAll('.effect-card')) {
+    const id = card.dataset.effectId;
+    card.querySelector('.effect-card-body').style.display = 'none';
+    card.classList.remove('effect-card--enabled');
+    const slider = card.querySelector('.effect-slider:not(.effect-extra-slider)');
+    if (slider) slider.value = effectStrengths[id];
+    for (const es of card.querySelectorAll('.effect-extra-slider')) {
+      const key = es.dataset.paramKey;
+      const cfg = effectExtraParams[id];
+      if (cfg && key in cfg) {
+        es.value = cfg[key];
+        const row = es.previousElementSibling;
+        if (row) {
+          const valSpan = row.querySelector('.effect-region-values');
+          if (valSpan) {
+            const effectDef = registry.find(e => e.id === id);
+            const unit = effectDef?.extraParams?.[key]?.unit || '';
+            valSpan.textContent = `${cfg[key]}${unit}`;
+          }
+        }
+      }
+    }
+  }
+  // Hide workspace, show upload
+  workspace.classList.add('hidden');
+  uploadSection.style.display = '';
+  dropZone.style.display = '';
+  reuploadBtn.classList.add('hidden');
+  output.clear();
+  statusMsg.textContent = '';
+  updateAllOverlays();
+  // Clear canvases
+  const ictx = inputCanvas.getContext('2d');
+  ictx.clearRect(0, 0, inputCanvas.width, inputCanvas.height);
+  imageInfo.textContent = '';
+  // Reset file input so the same file can be re-selected
+  fileInput.value = '';
+});
+
 // --- Upload ---
 setupUpload(dropZone, fileInput,
   (imageData, fileName, fileSize) => {
     currentImageData = imageData;
     errorMsg.classList.add('hidden');
     workspace.classList.remove('hidden');
+    uploadSection.style.display = 'none';
     dropZone.style.display = 'none';
+    reuploadBtn.classList.remove('hidden');
 
     const displayW = inputContainer.clientWidth;
     inputCanvas.width = imageData.width;

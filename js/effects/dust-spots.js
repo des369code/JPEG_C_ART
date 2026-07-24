@@ -13,9 +13,11 @@ export const effect = {
     const count = Math.round((strength / 100) * 8);
     if (count <= 0) return;
 
+    const { x, y, w, h } = region;
+
     for (let n = 0; n < count; n++) {
-      const sx = Math.random() * width;
-      const sy = Math.random() * height;
+      const sx = x + Math.random() * w;
+      const sy = y + Math.random() * h;
       const radius = 3 + Math.random() * 12;
       const opacity = 0.03 + Math.random() * 0.10 * (strength / 100);
 

@@ -232,8 +232,8 @@ main {
 }
 
 #show-all-regions-btn {
-  font-size: 0.75rem;
-  padding: 0.375rem 0.625rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
 }
 
 .control-group {
@@ -422,23 +422,6 @@ main {
   max-height: 92vh;
   object-fit: contain;
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
-}
-
-/* ── Footer ─────────────────────────────────── */
-
-footer {
-  padding: 1.5rem 2rem;
-  max-width: 100%;
-  margin: 0 auto;
-  width: 100%;
-  border-top: 1px solid var(--border);
-}
-
-footer p {
-  font-family: var(--font);
-  font-size: 0.875rem;       /* 16px */
-  font-weight: 400;
-  color: var(--text-muted);
 }
 
 /* ── Effect Cards ─────────────────────────── */
@@ -652,12 +635,20 @@ footer p {
   border-radius: 4px;
 }
 
-#apply-btn {
-  margin-top: 0.375rem;
+/* ── Button Row (Apply + Reset side by side) ── */
+
+.button-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.button-row .btn-primary {
+  flex: 1;
   border-radius: 4px;
 }
 
-#reset-btn {
+#apply-btn {
   border-radius: 4px;
 }
 
@@ -676,6 +667,13 @@ footer p {
 .btn-secondary:hover {
   color: var(--text);
   border-color: var(--text-muted);
+}
+
+/* ── Re-upload ─────────────────────────────── */
+
+#reupload-btn {
+  margin-top: 0.75rem;
+  border-radius: 4px;
 }
 
 /* ── Focus ─────────────────────────────────── */

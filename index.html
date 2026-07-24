@@ -12,7 +12,8 @@
 <body>
   <header>
     <h1>DesImageEditor</h1>
-    <p class="subtitle">Add real-world camera imperfections and compression artifacts to your images. Everything runs locally — no upload, no server, no paywall.</p>
+    <p class="subtitle">Add real-world camera imperfections and compression artifacts to your images.</p>
+    <button id="reupload-btn" class="btn-secondary reupload-btn hidden">Try a different image</button>
   </header>
 
   <main>
@@ -56,8 +57,10 @@
               <select id="preset-select"></select>
               <button id="preset-apply" class="btn-secondary">Apply preset</button>
             </div>
-            <button id="apply-btn" class="btn-primary">Apply effects</button>
-            <button id="reset-btn" class="btn-secondary">Reset all</button>
+            <div class="button-row">
+              <button id="apply-btn" class="btn-primary">Apply effects</button>
+              <button id="reset-btn" class="btn-primary">Reset all</button>
+            </div>
             <p id="status-msg" class="info-text"></p>
           </div>
 
@@ -98,10 +101,6 @@
       </div>
     </section>
   </main>
-
-  <footer>
-    <p>Processing is entirely local. No image ever leaves your browser.</p>
-  </footer>
 
   <script type="module" src="js/app.js"></script>
 </body>
