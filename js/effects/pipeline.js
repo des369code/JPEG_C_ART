@@ -10,16 +10,11 @@ const OUTPUT_QUALITY = 0.92;
  * @param {ImageData} imageData
  * @param {Set<string>} enabledIds
  * @param {Object<string, number>} strengths
- * @param {{x: number, y: number, w: number, h: number}} region
+ * @param {Object<string, {x:number,y:number,w:number,h:number}>} regions — per-effect regions
  * @returns {Promise<Blob>}
  */
-export async function applyEffects(imageData, enabledIds, strengths, region) {
+export async function applyEffects(imageData, enabledIds, strengths, regions = {}) {
   const { width, height } = imageData;
-
-  const rx = clamp(region.x, 0, width);
-  const ry = clamp(region.y, 0, height);
-  const rw = clamp(region.w, 1, width - rx);
-  const rh = clamp(region.h, 1, height - ry);
 
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -31,6 +26,14 @@ export async function applyEffects(imageData, enabledIds, strengths, region) {
     if (!enabledIds.has(effect.id)) continue;
     const strength = strengths[effect.id] ?? effect.defaultStrength;
     if (strength <= 0) continue;
+
+    // Per-effect region with full-frame fallback
+    const r = regions[effect.id] || { x: 0, y: 0, w: width, h: height };
+    const rx = clamp(r.x, 0, width);
+    const ry = clamp(r.y, 0, height);
+    const rw = clamp(r.w, 1, width - rx);
+    const rh = clamp(r.h, 1, height - ry);
+
     try {
       await effect.apply(ctx, width, height, { x: rx, y: ry, w: rw, h: rh }, strength);
     } catch (err) {
