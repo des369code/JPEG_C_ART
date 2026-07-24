@@ -1,6 +1,6 @@
-# JPEG Artifact Adder
+# DesImageEditor
 
-A free, privacy-focused web tool that adds real JPEG compression artifacts to images. All processing happens locally in your browser — no uploads, no server, no paywall.
+A free, privacy-focused web tool that adds real-world camera imperfections and compression artifacts to images. All processing happens locally in your browser — no uploads, no server, no paywall.
 
 Replicates the JPEG artifact functionality of onlinejpgtools.com/add-jpg-artifacts.
 
