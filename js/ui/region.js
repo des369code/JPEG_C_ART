@@ -30,26 +30,13 @@ export function setupRegion(container, inputs) {
   container.style.position = 'relative';
   container.appendChild(overlay);
 
-  // Create draggable/resizable handle
+  // Create draggable/resizable handle — styled via CSS classes
   const handle = document.createElement('div');
   handle.className = 'region-handle';
-  handle.style.cssText = `
-    position: absolute;
-    border: 2px dashed #fff;
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
-    cursor: move;
-    pointer-events: auto;
-  `;
 
   // Resize handle (bottom-right corner)
   const resizeHandle = document.createElement('div');
   resizeHandle.className = 'resize-handle';
-  resizeHandle.style.cssText = `
-    position: absolute; bottom: -6px; right: -6px;
-    width: 12px; height: 12px;
-    background: #fff; border: 2px solid #333;
-    cursor: nwse-resize; pointer-events: auto;
-  `;
   handle.appendChild(resizeHandle);
 
   overlay.appendChild(handle);
