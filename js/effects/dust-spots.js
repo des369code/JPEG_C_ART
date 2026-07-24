@@ -1,0 +1,31 @@
+/** Dust spots — sensor dust creating dark blurred spots. */
+
+import { clamp } from '../utils.js';
+
+export const effect = {
+  id: 'dust-spots',
+  name: 'Dust spots',
+  category: 'sensor',
+  description: 'Small dark spots from dust on the camera sensor.',
+  defaultStrength: 25,
+
+  apply(ctx, width, height, region, strength) {
+    const count = Math.round((strength / 100) * 8);
+    if (count <= 0) return;
+
+    for (let n = 0; n < count; n++) {
+      const sx = Math.random() * width;
+      const sy = Math.random() * height;
+      const radius = 3 + Math.random() * 12;
+      const opacity = 0.03 + Math.random() * 0.10 * (strength / 100);
+
+      const grad = ctx.createRadialGradient(sx, sy, radius * 0.2, sx, sy, radius);
+      grad.addColorStop(0, `rgba(20,20,20,${opacity})`);
+      grad.addColorStop(0.4, `rgba(30,30,30,${opacity * 0.7})`);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(sx - radius, sy - radius, radius * 2, radius * 2);
+    }
+  },
+};
