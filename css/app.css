@@ -409,6 +409,112 @@ footer p {
   color: var(--text-muted);
 }
 
+/* ── Effects List ─────────────────────────── */
+
+.effects-divider {
+  border-top: 1px solid var(--border);
+  margin: 0.25rem 0;
+}
+
+#effects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.effect-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 0.25rem 0.5rem;
+  align-items: center;
+}
+
+.effect-row input[type="checkbox"] {
+  grid-row: 1;
+  grid-column: 1;
+  accent-color: var(--text);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.effect-row .effect-label {
+  grid-row: 1;
+  grid-column: 2;
+  font-family: var(--font);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.effect-row .effect-desc {
+  grid-row: 2;
+  grid-column: 2;
+  font-family: var(--font);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.effect-row input[type="range"] {
+  grid-row: 3;
+  grid-column: 1 / -1;
+  margin-top: 0.25rem;
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+
+.effect-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+}
+
+.effect-row input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  border: none;
+  cursor: pointer;
+}
+
+.effect-strength-label {
+  font-family: var(--font);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-secondary:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
 /* ── Focus ─────────────────────────────────── */
 
 :focus-visible {

@@ -47,7 +47,7 @@
 
         <!-- Controls Panel -->
         <div class="panel controls-panel">
-          <h2>Region &amp; Strength</h2>
+          <h2>Region</h2>
 
           <div class="control-group">
             <label for="region-left">Left offset</label>
@@ -66,14 +66,12 @@
             <input type="number" id="region-height" value="200" min="1">
           </div>
 
-          <div class="control-group">
-            <label for="strength-slider">
-              Artifact strength — <span id="strength-value">50</span>%
-            </label>
-            <input type="range" id="strength-slider" value="50" min="0" max="100">
-          </div>
+          <div class="effects-divider"></div>
+          <h2>Effects</h2>
+          <div id="effects-list"></div>
 
-          <button id="apply-btn" class="btn-primary">Apply artifacts</button>
+          <button id="apply-btn" class="btn-primary">Apply effects</button>
+          <button id="reset-btn" class="btn-secondary">Reset all</button>
           <p id="status-msg" class="info-text"></p>
         </div>
 
