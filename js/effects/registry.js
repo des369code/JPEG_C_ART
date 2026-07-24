@@ -18,6 +18,9 @@ import { effect as isoGrain } from './iso-grain.js';
 import { effect as deadPixels } from './dead-pixels.js';
 import { effect as dustSpots } from './dust-spots.js';
 
+// Sharpening
+import { effect as unsharpMask } from './unsharp-mask.js';
+
 // Compression
 import { effect as jpegArtifacts } from './jpeg-artifacts.js';
 
@@ -32,5 +35,6 @@ export const registry = [
   isoGrain,
   deadPixels,
   dustSpots,
+  unsharpMask,
   jpegArtifacts,
 ];

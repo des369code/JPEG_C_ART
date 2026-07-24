@@ -11,9 +11,10 @@ const OUTPUT_QUALITY = 0.92;
  * @param {Set<string>} enabledIds
  * @param {Object<string, number>} strengths
  * @param {Object<string, {x:number,y:number,w:number,h:number}>} regions — per-effect regions
+ * @param {Object<string, Object>} [extraParams] — per-effect extra parameters (radius, threshold, etc.)
  * @returns {Promise<Blob>}
  */
-export async function applyEffects(imageData, enabledIds, strengths, regions = {}) {
+export async function applyEffects(imageData, enabledIds, strengths, regions = {}, extraParams = {}) {
   const { width, height } = imageData;
 
   const canvas = document.createElement('canvas');
@@ -35,7 +36,7 @@ export async function applyEffects(imageData, enabledIds, strengths, regions = {
     const rh = clamp(r.h, 1, height - ry);
 
     try {
-      await effect.apply(ctx, width, height, { x: rx, y: ry, w: rw, h: rh }, strength);
+      await effect.apply(ctx, width, height, { x: rx, y: ry, w: rw, h: rh }, strength, extraParams[effect.id]);
     } catch (err) {
       console.error(`Effect "${effect.id}" failed:`, err);
     }

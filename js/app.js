@@ -37,6 +37,7 @@ let _imageData = null, _fileName = '', _fileSize = 0;
 const effectStrengths = {};
 const effectEnabled = {};
 const effectRegions = {};
+const effectExtraParams = {};
 
 // --- Output ---
 const output = setupOutput(outputCanvas, downloadBtn, outputSize, zoomOverlay, zoomImage);
@@ -128,6 +129,47 @@ for (const effect of registry) {
     pctLabel.textContent = `${slider.value}%`;
   });
 
+  // Extra per-effect parameters (e.g. unsharp-mask radius, threshold)
+  if (effect.extraParams) {
+    effectExtraParams[effect.id] = {};
+    for (const [key, cfg] of Object.entries(effect.extraParams)) {
+      effectExtraParams[effect.id][key] = cfg.default;
+
+      const extraRow = document.createElement('div');
+      extraRow.style.cssText = 'display:flex;align-items:center;gap:0.375rem;';
+
+      const extraLabel = document.createElement('span');
+      extraLabel.className = 'effect-region-label';
+      extraLabel.textContent = cfg.label;
+
+      const extraVal = document.createElement('span');
+      extraVal.className = 'effect-region-values';
+      extraVal.textContent = `${cfg.default}${cfg.unit || ''}`;
+
+      extraRow.appendChild(extraLabel);
+      extraRow.appendChild(extraVal);
+      body.appendChild(extraRow);
+
+      const extraSlider = document.createElement('input');
+      extraSlider.type = 'range';
+      extraSlider.min = String(cfg.min);
+      extraSlider.max = String(cfg.max);
+      extraSlider.step = String(cfg.step || 1);
+      extraSlider.value = String(cfg.default);
+      extraSlider.className = 'effect-slider effect-extra-slider';
+      extraSlider.dataset.effectId = effect.id;
+      extraSlider.dataset.paramKey = key;
+
+      extraSlider.addEventListener('input', () => {
+        const v = parseFloat(extraSlider.value);
+        effectExtraParams[effect.id][key] = v;
+        extraVal.textContent = `${extraSlider.value}${cfg.unit || ''}`;
+      });
+
+      body.appendChild(extraSlider);
+    }
+  }
+
   // Toggle — clicking anywhere on the card header toggles the effect.
   // When enabling, the region overlay is activated automatically.
   const toggleEffect = () => {
@@ -203,14 +245,41 @@ presetApply.addEventListener('click', () => {
     effectStrengths[id] = cfg.strength;
   }
 
+  // Reset extra params to defaults for all effects
+  for (const e of registry) {
+    if (e.extraParams) {
+      if (!effectExtraParams[e.id]) effectExtraParams[e.id] = {};
+      for (const [key, p] of Object.entries(e.extraParams)) {
+        effectExtraParams[e.id][key] = p.default;
+      }
+    }
+  }
+
   // Re-render cards
   for (const card of effectsList.querySelectorAll('.effect-card')) {
     const id = card.dataset.effectId;
     const enabled = effectEnabled[id];
     card.querySelector('.effect-card-body').style.display = enabled ? '' : 'none';
     card.classList.toggle('effect-card--enabled', enabled);
-    const slider = card.querySelector('.effect-slider');
+    const slider = card.querySelector('.effect-slider:not(.effect-extra-slider)');
     if (slider) slider.value = effectStrengths[id];
+    // Reset extra-param sliders to defaults
+    for (const es of card.querySelectorAll('.effect-extra-slider')) {
+      const key = es.dataset.paramKey;
+      const cfg = effectExtraParams[id];
+      if (cfg && key in cfg) {
+        es.value = cfg[key];
+        const row = es.previousElementSibling;
+        if (row) {
+          const valSpan = row.querySelector('.effect-region-values');
+          if (valSpan) {
+            const effectDef = registry.find(e => e.id === id);
+            const unit = effectDef?.extraParams?.[key]?.unit || '';
+            valSpan.textContent = `${cfg[key]}${unit}`;
+          }
+        }
+      }
+    }
   }
 
   updateAllOverlays();
@@ -271,10 +340,10 @@ applyBtn.addEventListener('click', async () => {
   statusMsg.textContent = `Processing ${enabledIds.size} effects...`;
 
   try {
-    const blob = await applyEffects(currentImageData, enabledIds, effectStrengths, effectRegions);
+    const blob = await applyEffects(currentImageData, enabledIds, effectStrengths, effectRegions, effectExtraParams);
     await output.showResult(blob);
     statusMsg.textContent = `${enabledIds.size} effects applied.`;
-    saveCustomPreset({ enabledIds, strengths: effectStrengths, regions: effectRegions });
+    saveCustomPreset({ enabledIds, strengths: effectStrengths, regions: effectRegions, extraParams: effectExtraParams });
   } catch (err) {
     statusMsg.textContent = 'Processing failed.';
     console.error(err);
@@ -288,13 +357,38 @@ resetBtn.addEventListener('click', () => {
   for (const e of registry) {
     effectEnabled[e.id] = false;
     effectStrengths[e.id] = e.defaultStrength;
+    // Reset extra params to defaults
+    if (e.extraParams) {
+      if (!effectExtraParams[e.id]) effectExtraParams[e.id] = {};
+      for (const [key, p] of Object.entries(e.extraParams)) {
+        effectExtraParams[e.id][key] = p.default;
+      }
+    }
   }
   for (const card of effectsList.querySelectorAll('.effect-card')) {
     const id = card.dataset.effectId;
     card.querySelector('.effect-card-body').style.display = 'none';
     card.classList.remove('effect-card--enabled');
-    const slider = card.querySelector('.effect-slider');
+    const slider = card.querySelector('.effect-slider:not(.effect-extra-slider)');
     if (slider) slider.value = effectStrengths[id];
+    // Reset extra-param sliders and labels
+    for (const es of card.querySelectorAll('.effect-extra-slider')) {
+      const key = es.dataset.paramKey;
+      const cfg = effectExtraParams[id];
+      if (cfg && key in cfg) {
+        es.value = cfg[key];
+        // Update the value label next to the slider
+        const row = es.previousElementSibling;
+        if (row) {
+          const valSpan = row.querySelector('.effect-region-values');
+          if (valSpan) {
+            const effectDef = registry.find(e => e.id === id);
+            const unit = effectDef?.extraParams?.[key]?.unit || '';
+            valSpan.textContent = `${cfg[key]}${unit}`;
+          }
+        }
+      }
+    }
   }
   updateAllOverlays();
   statusMsg.textContent = '';
