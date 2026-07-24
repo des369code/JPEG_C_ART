@@ -42,7 +42,7 @@ export const effect = {
     const out = origData;
 
     for (let i = 0; i < maskData.data.length; i += 4) {
-      const alpha = maskData.data[i] / 255; // 0=sharp center, 1=blurred edge
+      const alpha = maskData.data[i + 3] / 255; // 0=sharp center, 1=blurred edge
       out.data[i]     = origData.data[i]     * (1 - alpha) + blurData.data[i]     * alpha;
       out.data[i + 1] = origData.data[i + 1] * (1 - alpha) + blurData.data[i + 1] * alpha;
       out.data[i + 2] = origData.data[i + 2] * (1 - alpha) + blurData.data[i + 2] * alpha;
