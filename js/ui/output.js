@@ -1,15 +1,17 @@
-/** Preview display and download trigger for processed image */
+/** Preview display, zoom overlay, and download trigger for processed image */
 
 import { formatBytes } from '../utils.js';
 
 /**
- * Set up output display with preview canvas and download button.
+ * Set up output display with preview canvas, zoom overlay, and download button.
  * @param {HTMLCanvasElement} previewCanvas
  * @param {HTMLButtonElement} downloadBtn
  * @param {HTMLElement} sizeEl — element to display file size
+ * @param {HTMLElement} zoomOverlay — full-screen zoom overlay div
+ * @param {HTMLImageElement} zoomImage — img inside the zoom overlay
  * @returns {{showResult: function, clear: function}}
  */
-export function setupOutput(previewCanvas, downloadBtn, sizeEl) {
+export function setupOutput(previewCanvas, downloadBtn, sizeEl, zoomOverlay, zoomImage) {
   let currentBlob = null;
 
   downloadBtn.addEventListener('click', () => {
@@ -22,6 +24,35 @@ export function setupOutput(previewCanvas, downloadBtn, sizeEl) {
     URL.revokeObjectURL(url);
   });
 
+  // Click output preview → zoom to full resolution
+  previewCanvas.addEventListener('click', () => {
+    if (!currentBlob) return;
+    const url = URL.createObjectURL(currentBlob);
+    zoomImage.src = url;
+    zoomOverlay.classList.remove('hidden');
+    // Revoke after the image loads to avoid holding stale blob URLs
+    zoomImage.onload = () => URL.revokeObjectURL(url);
+  });
+
+  // Click overlay background or close button → dismiss
+  function closeZoom() {
+    zoomOverlay.classList.add('hidden');
+    zoomImage.src = '';
+  }
+
+  zoomOverlay.addEventListener('click', (e) => {
+    if (e.target === zoomOverlay || e.target.classList.contains('zoom-close')) {
+      closeZoom();
+    }
+  });
+
+  // Escape key → dismiss
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !zoomOverlay.classList.contains('hidden')) {
+      closeZoom();
+    }
+  });
+
   return {
     /**
      * Display a processed JPEG blob as a preview.
@@ -31,7 +62,6 @@ export function setupOutput(previewCanvas, downloadBtn, sizeEl) {
       currentBlob = blob;
       sizeEl.textContent = formatBytes(blob.size);
 
-      // Decode blob to draw on preview canvas
       const url = URL.createObjectURL(blob);
       const img = new Image();
       img.onload = () => {

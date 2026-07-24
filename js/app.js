@@ -20,13 +20,15 @@ const strengthValue = document.getElementById('strength-value');
 const outputCanvas = document.getElementById('output-canvas');
 const downloadBtn = document.getElementById('download-btn');
 const outputSize = document.getElementById('output-size');
+const zoomOverlay = document.getElementById('zoom-overlay');
+const zoomImage = document.getElementById('zoom-image');
 
 // --- State ---
 let currentImageData = null;
 let currentFileName = '';
 
 // --- Output module ---
-const output = setupOutput(outputCanvas, downloadBtn, outputSize);
+const output = setupOutput(outputCanvas, downloadBtn, outputSize, zoomOverlay, zoomImage);
 
 // --- Region selector ---
 const regionInputs = {

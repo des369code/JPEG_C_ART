@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JPEG Artifact Adder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -23,6 +26,12 @@
       </div>
       <p id="error-msg" class="error hidden"></p>
     </section>
+
+    <!-- Zoom overlay (hidden until output clicked) -->
+    <div id="zoom-overlay" class="hidden">
+      <div class="zoom-close">&times;</div>
+      <img id="zoom-image" src="" alt="Full resolution output">
+    </div>
 
     <!-- Workspace (hidden until image loaded) -->
     <section id="workspace" class="hidden">

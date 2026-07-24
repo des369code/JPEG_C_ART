@@ -1,7 +1,5 @@
 /* JPEG Artifact Adder — darkroom theme */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
-
 :root {
   --bg: #0f0f0e;
   --surface: #1a1a18;
@@ -21,14 +19,14 @@
 }
 
 html {
-  font-size: 100%;
+  font-size: 112.5%; /* 18px base — everything scales from here */
 }
 
 body {
   font-family: var(--font);
-  font-size: 0.9375rem;
+  font-size: 1rem;          /* 18px */
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -41,22 +39,25 @@ body {
 /* ── Header ───────────────────────────────── */
 
 header {
-  padding: 2.5rem 2rem 2rem;
-  max-width: 1200px;
+  padding: 3rem 2.5rem 2rem;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
 }
 
 header h1 {
-  font-size: 1.5rem;
+  font-family: var(--font);
+  font-size: 2rem;           /* 36px */
   font-weight: 600;
-  letter-spacing: -0.02em;
-  margin-bottom: 0.25rem;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
   color: var(--text);
 }
 
 .subtitle {
-  font-size: 0.9375rem;
+  font-family: var(--font);
+  font-size: 1.125rem;       /* 20px */
+  font-weight: 400;
   color: var(--text-muted);
   max-width: 44ch;
   line-height: 1.6;
@@ -66,8 +67,8 @@ header h1 {
 
 main {
   flex: 1;
-  padding: 0 2rem 2rem;
-  max-width: 1200px;
+  padding: 0 2.5rem 2.5rem;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
 }
@@ -75,12 +76,12 @@ main {
 /* ── Upload Zone ──────────────────────────── */
 
 #upload-section {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 #drop-zone {
   border: 1.5px dashed var(--border);
-  padding: 4rem 2rem;
+  padding: 5rem 2.5rem;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
@@ -93,25 +94,28 @@ main {
 }
 
 .drop-content p {
-  font-size: 1rem;
+  font-family: var(--font);
+  font-size: 1.125rem;       /* 20px */
+  font-weight: 400;
   color: var(--text-muted);
 }
 
 .drop-content p strong {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text);
   text-decoration: underline;
-  text-underline-offset: 4px;
+  text-underline-offset: 5px;
   text-decoration-color: var(--text-muted);
 }
 
 /* ── Error ────────────────────────────────── */
 
 .error {
-  font-size: 0.875rem;
+  font-family: var(--font);
+  font-size: 1rem;           /* 18px */
   font-weight: 500;
   color: #e05a5a;
-  margin-top: 0.75rem;
+  margin-top: 0.875rem;
 }
 
 .hidden { display: none !important; }
@@ -120,32 +124,32 @@ main {
 
 #workspace {
   border-top: 1px solid var(--border);
-  padding-top: 2rem;
+  padding-top: 2.5rem;
 }
 
 .workspace-layout {
   display: grid;
-  grid-template-columns: 1fr 280px 1fr;
-  gap: 1.5rem;
+  grid-template-columns: 1.25fr 300px 1.25fr;
+  gap: 2rem;
   align-items: start;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1000px) {
   .workspace-layout {
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
   header {
-    padding: 2rem 1.25rem 1.5rem;
+    padding: 2rem 1.5rem 1.5rem;
   }
 
   main {
-    padding: 0 1.25rem 1.5rem;
+    padding: 0 1.5rem 1.5rem;
   }
 
   #drop-zone {
-    padding: 2.5rem 1.25rem;
+    padding: 3rem 1.5rem;
   }
 }
 
@@ -154,17 +158,18 @@ main {
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 1.25rem;
+  padding: 1.5rem;
 }
 
 .panel h2 {
-  font-size: 0.8125rem;
+  font-family: var(--font);
+  font-size: 0.9375rem;      /* 17px */
   font-weight: 500;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
+  margin-bottom: 1.125rem;
+  padding-bottom: 0.875rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -173,7 +178,7 @@ main {
 .canvas-container {
   position: relative;
   background: #000000;
-  margin-bottom: 0.625rem;
+  margin-bottom: 0.75rem;
 }
 
 .canvas-container canvas {
@@ -185,7 +190,9 @@ main {
 /* ── Info ─────────────────────────────────── */
 
 .info-text {
-  font-size: 0.8125rem;
+  font-family: var(--font);
+  font-size: 0.9375rem;      /* 17px */
+  font-weight: 400;
   color: var(--text-muted);
 }
 
@@ -194,28 +201,29 @@ main {
 .controls-panel {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .control-group {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.5rem;
 }
 
 .control-group label {
-  font-size: 0.8125rem;
+  font-family: var(--font);
+  font-size: 0.9375rem;      /* 17px */
   font-weight: 500;
   color: var(--text);
 }
 
 .control-group input[type="number"] {
-  padding: 0.5rem 0.625rem;
+  padding: 0.625rem 0.75rem;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
-  font-size: 0.875rem;
+  font-size: 1rem;           /* 18px */
   font-weight: 500;
   width: 100%;
   outline: none;
@@ -234,14 +242,14 @@ main {
   background: var(--border);
   border-radius: 2px;
   outline: none;
-  margin: 0.375rem 0;
+  margin: 0.5rem 0;
 }
 
 .control-group input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--text);
   cursor: pointer;
@@ -249,12 +257,12 @@ main {
 }
 
 .control-group input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
+  transform: scale(1.2);
 }
 
 .control-group input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--text);
   border: none;
@@ -264,12 +272,12 @@ main {
 /* ── Button ───────────────────────────────── */
 
 .btn-primary {
-  padding: 0.625rem 1.25rem;
+  padding: 0.75rem 1.5rem;
   border: 1px solid var(--text);
   background: var(--text);
   color: var(--bg);
   font-family: var(--font);
-  font-size: 0.875rem;
+  font-size: 1rem;           /* 18px */
   font-weight: 500;
   cursor: pointer;
   transition: background 0.1s, color 0.1s;
@@ -293,11 +301,13 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.625rem;
+  margin-top: 0.75rem;
 }
 
 #output-size {
-  font-size: 0.8125rem;
+  font-family: var(--font);
+  font-size: 0.9375rem;      /* 17px */
+  font-weight: 400;
   color: var(--text-muted);
 }
 
@@ -317,19 +327,15 @@ main {
   cursor: move;
   pointer-events: auto;
   mix-blend-mode: difference;
-  /* difference blending inverts the white border against any image:
-     - over dark areas → bright white
-     - over light areas → dark/black
-     - over colored areas → complementary color
-     Guarantees visibility on every image. */
+  /* Always visible: inverts against any background */
 }
 
 .resize-handle {
   position: absolute;
-  bottom: -5px;
-  right: -5px;
-  width: 12px;
-  height: 12px;
+  bottom: -6px;
+  right: -6px;
+  width: 14px;
+  height: 14px;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.3);
   cursor: nwse-resize;
@@ -337,18 +343,69 @@ main {
   mix-blend-mode: difference;
 }
 
+/* ── Output click-to-zoom hint ───────────── */
+
+#output-canvas {
+  cursor: zoom-in;
+}
+
+/* ── Zoom Overlay ─────────────────────────── */
+
+#zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: zoomFadeIn 0.15s ease-out;
+}
+
+@keyframes zoomFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.zoom-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+  z-index: 1001;
+  transition: color 0.15s;
+}
+
+.zoom-close:hover {
+  color: var(--text);
+}
+
+#zoom-image {
+  max-width: 92vw;
+  max-height: 92vh;
+  object-fit: contain;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+}
+
 /* ── Footer ─────────────────────────────────── */
 
 footer {
-  padding: 1.5rem 2rem;
-  max-width: 1200px;
+  padding: 2rem 2.5rem;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
   border-top: 1px solid var(--border);
 }
 
 footer p {
-  font-size: 0.75rem;
+  font-family: var(--font);
+  font-size: 0.875rem;       /* 16px */
+  font-weight: 400;
   color: var(--text-muted);
 }
 
