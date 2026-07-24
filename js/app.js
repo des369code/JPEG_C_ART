@@ -1,12 +1,16 @@
-/** Main controller — dynamic effects UI + pipeline dispatch */
+/** DesImageEditor — multi-effect camera flaw simulator with per-effect regions. */
 
 import { setupUpload } from './ui/upload.js';
-import { setupRegion } from './ui/region.js';
+import { setupRegions } from './ui/region.js';
 import { setupOutput } from './ui/output.js';
 import { applyEffects } from './effects/pipeline.js';
 import { registry } from './effects/registry.js';
+import { presets, saveCustomPreset } from './effects/presets.js';
 
-// --- DOM references ---
+// Full-frame effects — no region overlay or inputs
+const FULL_FRAME = new Set(['vignetting', 'chromatic-aberration', 'edge-softness', 'lens-flare']);
+
+// --- DOM ---
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 const errorMsg = document.getElementById('error-msg');
@@ -18,6 +22,8 @@ const effectsList = document.getElementById('effects-list');
 const applyBtn = document.getElementById('apply-btn');
 const resetBtn = document.getElementById('reset-btn');
 const statusMsg = document.getElementById('status-msg');
+const presetSelect = document.getElementById('preset-select');
+const presetApply = document.getElementById('preset-apply');
 const outputCanvas = document.getElementById('output-canvas');
 const downloadBtn = document.getElementById('download-btn');
 const outputSize = document.getElementById('output-size');
@@ -28,65 +34,182 @@ const zoomImage = document.getElementById('zoom-image');
 let currentImageData = null;
 const effectStrengths = {};
 const effectEnabled = {};
+const effectRegions = {};
 
-// --- Output module ---
+// --- Output ---
 const output = setupOutput(outputCanvas, downloadBtn, outputSize, zoomOverlay, zoomImage);
 
-// --- Region selector ---
+// --- Regions ---
 const regionInputs = {
   left: document.getElementById('region-left'),
   top: document.getElementById('region-top'),
   width: document.getElementById('region-width'),
   height: document.getElementById('region-height'),
 };
-const regionSelector = setupRegion(inputContainer, regionInputs);
+const regions = setupRegions(inputContainer, regionInputs);
 
-// --- Build effects UI from registry ---
+// --- Build effect cards ---
 for (const effect of registry) {
   effectStrengths[effect.id] = effect.defaultStrength;
   effectEnabled[effect.id] = false;
+  effectRegions[effect.id] = { x: 0, y: 0, w: 0, h: 0 };
 
-  const row = document.createElement('div');
-  row.className = 'effect-row';
+  const isFullFrame = FULL_FRAME.has(effect.id);
 
-  const cb = document.createElement('input');
-  cb.type = 'checkbox';
-  cb.id = `eff-${effect.id}`;
-  cb.checked = false;
+  const card = document.createElement('div');
+  card.className = 'effect-card';
+  card.dataset.effectId = effect.id;
 
-  const label = document.createElement('label');
-  label.className = 'effect-label';
-  label.htmlFor = cb.id;
-  label.textContent = effect.name;
+  // Header row
+  const header = document.createElement('div');
+  header.className = 'effect-card-header';
 
-  const desc = document.createElement('span');
-  desc.className = 'effect-desc';
-  desc.textContent = effect.description;
+  const toggle = document.createElement('span');
+  toggle.className = 'effect-toggle';
+  toggle.textContent = '○';
+  toggle.title = 'Toggle effect';
+
+  const dot = document.createElement('span');
+  dot.className = 'effect-dot';
+  dot.style.cssText = `background:${getColor(effect.id)};width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0;`;
+
+  const name = document.createElement('span');
+  name.className = 'effect-card-name';
+  name.textContent = effect.name;
+
+  const badge = document.createElement('span');
+  if (isFullFrame) {
+    badge.className = 'effect-badge';
+    badge.textContent = 'Full frame';
+  }
+
+  header.appendChild(toggle);
+  header.appendChild(dot);
+  header.appendChild(name);
+  if (isFullFrame) header.appendChild(badge);
+
+  // Body (hidden when disabled)
+  const body = document.createElement('div');
+  body.className = 'effect-card-body';
+  body.style.display = 'none';
 
   const slider = document.createElement('input');
   slider.type = 'range';
   slider.min = '0';
   slider.max = '100';
   slider.value = effect.defaultStrength;
-  slider.style.display = 'none';
-  slider.title = effect.name + ' strength';
+  slider.className = 'effect-slider';
   slider.dataset.effectId = effect.id;
-
-  cb.addEventListener('change', () => {
-    effectEnabled[effect.id] = cb.checked;
-    slider.style.display = cb.checked ? '' : 'none';
-  });
-
   slider.addEventListener('input', () => {
     effectStrengths[effect.id] = parseInt(slider.value);
   });
 
-  row.appendChild(cb);
-  row.appendChild(label);
-  row.appendChild(desc);
-  row.appendChild(slider);
-  effectsList.appendChild(row);
+  body.appendChild(slider);
+
+  // Region inputs for non-full-frame effects
+  if (!isFullFrame) {
+    const regionRow = document.createElement('div');
+    regionRow.className = 'effect-region-row';
+    regionRow.innerHTML = `
+      <span class="effect-region-label">Region:</span>
+      <span class="effect-region-values" id="region-display-${effect.id}">Full image</span>
+      <button class="effect-region-btn" data-effect="${effect.id}">Edit region</button>
+    `;
+    regionRow.querySelector('.effect-region-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      regions.setActiveEffect(effect.id);
+      updateRegionInputsVisibility(effect.id);
+    });
+    body.appendChild(regionRow);
+  }
+
+  // Toggle
+  const toggleEffect = () => {
+    const wasEnabled = effectEnabled[effect.id];
+    effectEnabled[effect.id] = !wasEnabled;
+    toggle.textContent = effectEnabled[effect.id] ? '●' : '○';
+    body.style.display = effectEnabled[effect.id] ? '' : 'none';
+    card.classList.toggle('effect-card--enabled', effectEnabled[effect.id]);
+
+    if (effectEnabled[effect.id] && !wasEnabled) {
+      regions.setActiveEffect(effect.id);
+      updateRegionInputsVisibility(effect.id);
+    }
+
+    updateAllOverlays();
+  };
+
+  toggle.addEventListener('click', toggleEffect);
+  name.addEventListener('click', toggleEffect);
+
+  card.appendChild(header);
+  card.appendChild(body);
+  effectsList.appendChild(card);
 }
+
+function getColor(id) {
+  const colors = {
+    'motion-blur': '#ff6b6b', 'soft-focus': '#ffd93d', 'chromatic-aberration': '#6bcb77',
+    'iso-grain': '#4d96ff', 'dead-pixels': '#ff922b', 'dust-spots': '#cc5de8', 'jpeg-artifacts': '#20c997',
+  };
+  return colors[id] || '#888';
+}
+
+function updateRegionInputsVisibility(activeId) {
+  const isFF = FULL_FRAME.has(activeId);
+  for (const key of ['left', 'top', 'width', 'height']) {
+    regionInputs[key].parentElement.style.display = isFF ? 'none' : '';
+  }
+}
+
+function updateAllOverlays() {
+  const states = registry.map(e => ({
+    id: e.id,
+    enabled: effectEnabled[e.id],
+    region: effectRegions[e.id],
+  }));
+  regions.updateOverlays(states);
+}
+
+// --- Presets dropdown ---
+for (const p of presets) {
+  const opt = document.createElement('option');
+  opt.value = p.id;
+  opt.textContent = p.name;
+  presetSelect.appendChild(opt);
+}
+
+presetApply.addEventListener('click', () => {
+  const preset = presets.find(p => p.id === presetSelect.value);
+  if (!preset) return;
+
+  // Reset all
+  for (const e of registry) {
+    effectEnabled[e.id] = false;
+    effectStrengths[e.id] = e.defaultStrength;
+  }
+
+  // Apply preset
+  for (const [id, cfg] of Object.entries(preset.effects)) {
+    effectEnabled[id] = cfg.enabled;
+    effectStrengths[id] = cfg.strength;
+  }
+
+  // Re-render cards
+  for (const card of effectsList.querySelectorAll('.effect-card')) {
+    const id = card.dataset.effectId;
+    const enabled = effectEnabled[id];
+    card.querySelector('.effect-toggle').textContent = enabled ? '●' : '○';
+    card.querySelector('.effect-card-body').style.display = enabled ? '' : 'none';
+    card.classList.toggle('effect-card--enabled', enabled);
+    const slider = card.querySelector('.effect-slider');
+    if (slider) slider.value = effectStrengths[id];
+  }
+
+  updateAllOverlays();
+  const firstEnabled = registry.find(e => effectEnabled[e.id]);
+  if (firstEnabled) regions.setActiveEffect(firstEnabled.id);
+});
 
 // --- Upload ---
 setupUpload(dropZone, fileInput,
@@ -100,7 +223,13 @@ setupUpload(dropZone, fileInput,
     inputCanvas.width = imageData.width;
     inputCanvas.height = imageData.height;
     inputCanvas.getContext('2d').putImageData(imageData, 0, 0);
-    regionSelector.updateImage(imageData.width, imageData.height, displayW, imageData.height * (displayW / imageData.width));
+    regions.updateImage(imageData.width, imageData.height, displayW, imageData.height * (displayW / imageData.width));
+
+    // Init all regions to full image
+    for (const e of registry) {
+      effectRegions[e.id] = { x: 0, y: 0, w: imageData.width, h: imageData.height };
+    }
+
     imageInfo.textContent = `${fileName} — ${imageData.width}×${imageData.height}`;
     output.clear();
     statusMsg.textContent = '';
@@ -111,47 +240,50 @@ setupUpload(dropZone, fileInput,
   }
 );
 
-// --- Apply button ---
+// --- Region change handler ---
+regions.onRegionChanged((activeId, allRegions) => {
+  for (const [id, r] of Object.entries(allRegions)) {
+    effectRegions[id] = r;
+  }
+});
+
+// --- Apply ---
 applyBtn.addEventListener('click', async () => {
   if (!currentImageData) return;
 
-  const region = regionSelector.getRegion();
-  const enabledIds = new Set(
-    registry.filter(e => effectEnabled[e.id]).map(e => e.id)
-  );
-
-  if (enabledIds.size === 0) {
-    statusMsg.textContent = 'No effects enabled.';
-    return;
-  }
+  const enabledIds = new Set(registry.filter(e => effectEnabled[e.id]).map(e => e.id));
+  if (enabledIds.size === 0) { statusMsg.textContent = 'No effects enabled.'; return; }
 
   applyBtn.disabled = true;
   statusMsg.textContent = `Processing ${enabledIds.size} effects...`;
 
   try {
-    const blob = await applyEffects(currentImageData, enabledIds, effectStrengths, region);
+    const blob = await applyEffects(currentImageData, enabledIds, effectStrengths, effectRegions);
     await output.showResult(blob);
     statusMsg.textContent = `${enabledIds.size} effects applied.`;
+    saveCustomPreset({ enabledIds, strengths: effectStrengths, regions: effectRegions });
   } catch (err) {
-    statusMsg.textContent = 'Processing failed. Try a smaller image.';
-    console.error('Pipeline error:', err);
+    statusMsg.textContent = 'Processing failed.';
+    console.error(err);
   } finally {
     applyBtn.disabled = false;
   }
 });
 
-// --- Reset button ---
+// --- Reset ---
 resetBtn.addEventListener('click', () => {
-  const checkboxes = effectsList.querySelectorAll('input[type="checkbox"]');
-  const sliders = effectsList.querySelectorAll('input[type="range"]');
-  for (const cb of checkboxes) cb.checked = false;
-  for (const s of sliders) {
-    s.style.display = 'none';
-    const effectId = s.dataset.effectId;
-    const def = registry.find(e => e.id === effectId)?.defaultStrength ?? 0;
-    s.value = def;
-    effectStrengths[effectId] = def;
-    effectEnabled[effectId] = false;
+  for (const e of registry) {
+    effectEnabled[e.id] = false;
+    effectStrengths[e.id] = e.defaultStrength;
   }
+  for (const card of effectsList.querySelectorAll('.effect-card')) {
+    const id = card.dataset.effectId;
+    card.querySelector('.effect-toggle').textContent = '○';
+    card.querySelector('.effect-card-body').style.display = 'none';
+    card.classList.remove('effect-card--enabled');
+    const slider = card.querySelector('.effect-slider');
+    if (slider) slider.value = effectStrengths[id];
+  }
+  updateAllOverlays();
   statusMsg.textContent = '';
 });
