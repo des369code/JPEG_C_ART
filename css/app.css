@@ -129,16 +129,9 @@ main {
 
 .workspace-layout {
   display: grid;
-  grid-template-columns: minmax(350px, 600px) 360px minmax(350px, 600px);
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 1.25rem;
-  align-items: start;
-  justify-content: center;
-}
-
-@media (max-width: 1300px) {
-  .workspace-layout {
-    grid-template-columns: minmax(260px, 1fr) 300px minmax(260px, 1fr);
-  }
+  align-items: stretch;
 }
 
 @media (max-width: 1000px) {
@@ -150,6 +143,10 @@ main {
 @media (max-width: 700px) {
   .workspace-layout {
     grid-template-columns: 1fr;
+  }
+
+  .sidebar-stack {
+    gap: 1rem;
   }
 
   #effects-list {
@@ -215,18 +212,10 @@ main {
 
 /* ── Controls ─────────────────────────────── */
 
-.sidebar-panel {
+.sidebar-stack {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.sidebar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  gap: 1.25rem;
   min-width: 0;
 }
 
