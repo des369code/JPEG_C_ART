@@ -39,6 +39,18 @@ The artifacts are **real** — not simulated. The browser's native JPEG encoder 
 - 100% client-side — works offline
 - Zero dependencies — just HTML, CSS, and vanilla JavaScript
 
+## Effects
+
+10 camera imperfection effects across three categories:
+
+**Focus flaws:** Motion blur, Soft focus
+**Lens flaws:** Chromatic aberration, Vignetting, Edge softness, Lens flare
+**Sensor flaws:** ISO grain, Dead/hot pixels, Dust spots
+**Compression:** JPEG artifacts
+
+Each effect can be toggled on/off with independent strength control.
+All enabled effects are applied in a single pass in physically-correct order.
+
 ## Browser Support
 
 Chrome, Firefox, Safari, Edge (all modern browsers with Canvas API support).
