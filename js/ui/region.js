@@ -12,6 +12,9 @@ const OVERLAY_COLORS = {
   'jpeg-artifacts':       '#20c997',
 };
 
+/** px from bottom-right corner that counts as a resize grab. */
+const RESIZE_ZONE = 28;
+
 /**
  * Set up per-effect region overlays on a canvas container.
  * @param {HTMLElement} container
@@ -34,6 +37,7 @@ export function setupRegions(container, inputs) {
   let dragging = false, resizing = false;
   let dragStart = { x: 0, y: 0 };
   let dragRegion = { x: 0, y: 0, w: 0, h: 0 };
+  let rafId = null;
   let showAllOverlays = false;
 
   function toDisplay(r) {
@@ -45,26 +49,36 @@ export function setupRegions(container, inputs) {
   function createHandle(effectId, color) {
     const handle = document.createElement('div');
     handle.className = 'effect-overlay-handle';
+    // The border + outline extend 3px outside the content box.
+    // Position the resize knob to straddle the border so the visual
+    // corner IS the clickable resize target.
     handle.style.cssText = `position:absolute;border:2px solid ${color};outline:1px solid rgba(0,0,0,0.5);cursor:move;pointer-events:auto;`;
     handle.dataset.effectId = effectId;
 
     const resize = document.createElement('div');
     resize.className = 'effect-overlay-resize';
-    resize.style.cssText = `position:absolute;bottom:0;right:0;width:14px;height:14px;background:${color};cursor:nwse-resize;pointer-events:auto;border-radius:0 0 2px 0;`;
+    // Extend 3px past the content edge to overlap the border+outline zone.
+    // The visible corner = content + 2px border + 1px outline = 3px outside.
+    resize.style.cssText = `position:absolute;bottom:-3px;right:-3px;width:22px;height:22px;background:${color};cursor:nwse-resize;pointer-events:auto;border-radius:0 0 3px 0;border:1px solid rgba(0,0,0,0.4);`;
 
     handle.appendChild(resize);
 
     handle.addEventListener('mousedown', (e) => {
-      console.log('region mousedown', { target: e.target.className, effectId, activeId });
       setActiveEffect(effectId);
-      // Use data attribute instead of element identity — more reliable across browsers
-      const isResize = e.target === resize || e.target.closest('[data-action="resize"]');
+
+      // Coordinate-based hit test: was the click in the bottom-right
+      // RESIZE_ZONE of the handle?  This is robust against the resize
+      // knob being clipped, overlapped, or the event targeting the
+      // border instead of the child div.
+      const rect = handle.getBoundingClientRect();
+      const relX = e.clientX - rect.left;
+      const relY = e.clientY - rect.top;
+      const isResize = relX > rect.width - RESIZE_ZONE && relY > rect.height - RESIZE_ZONE;
+
       if (isResize) {
         resizing = true;
-        console.log('region resize START', { effectId });
       } else {
         dragging = true;
-        console.log('region drag START', { effectId });
       }
       dragStart = { x: e.clientX, y: e.clientY };
       dragRegion = { ...(regions[effectId] || { x: 0, y: 0, w: 200, h: 200 }) };
@@ -72,35 +86,56 @@ export function setupRegions(container, inputs) {
       e.stopPropagation();
     });
 
-    resize.dataset.action = 'resize';
-
     return { handle, resize };
   }
 
-  // Global mouse events
-  window.addEventListener('mousemove', (e) => {
+  function applyDragResize(e) {
     if (!dragging && !resizing) return;
     if (!activeId) return;
     const dx = e.clientX - dragStart.x;
     const dy = e.clientY - dragStart.y;
     const sx = imageW / displayW;
     const sy = imageH / displayH;
-    const r = { ...(regions[activeId] || { x: 0, y: 0, w: 200, h: 200 }) };
+    // Compute from dragRegion (snapshot at mousedown) so repeated
+    // mousemoves don't drift from integer rounding.
+    const r = { ...dragRegion };
 
     if (dragging) {
-      r.x = Math.round(clamp(dragRegion.x + dx * sx, 0, imageW - r.w));
-      r.y = Math.round(clamp(dragRegion.y + dy * sy, 0, imageH - r.h));
-    } else if (resizing) {
-      r.w = Math.round(clamp(dragRegion.w + dx * sx, 10, imageW - r.x));
-      r.h = Math.round(clamp(dragRegion.h + dy * sy, 10, imageH - r.y));
+      r.x = Math.round(clamp(r.x + dx * sx, 0, imageW - r.w));
+      r.y = Math.round(clamp(r.y + dy * sy, 0, imageH - r.h));
+    } else {
+      r.w = Math.round(clamp(r.w + dx * sx, 10, imageW - r.x));
+      r.h = Math.round(clamp(r.h + dy * sy, 10, imageH - r.y));
     }
 
     regions[activeId] = r;
     renderAll();
     notify();
+  }
+
+  // Global mouse events — throttled via rAF so DOM writes don't lag.
+  let pendingEvent = null;
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging && !resizing) return;
+    pendingEvent = e;                  // always track the latest position
+    if (rafId) return;                // already scheduled
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      if (pendingEvent) {
+        applyDragResize(pendingEvent);
+        pendingEvent = null;
+      }
+    });
   });
 
-  window.addEventListener('mouseup', () => { dragging = false; resizing = false; });
+  window.addEventListener('mouseup', () => {
+    dragging = false;
+    resizing = false;
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  });
 
   // Numeric input sync — controls the active effect
   for (const key of ['left', 'top', 'width', 'height']) {
