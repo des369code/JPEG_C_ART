@@ -230,7 +230,8 @@ export function setupRegions(container, inputs) {
     updateOverlays(states) {
       for (const s of states) {
         enabledEffects[s.id] = s.enabled;
-        if (!regions[s.id]) regions[s.id] = s.region;
+        // Always sync region from caller (prevents stale overlay coords after image change)
+        if (s.region) regions[s.id] = { ...s.region };
         if (!overlays[s.id] && OVERLAY_COLORS[s.id]) {
           overlays[s.id] = createHandle(s.id, OVERLAY_COLORS[s.id]);
           overlayContainer.appendChild(overlays[s.id].handle);
@@ -255,6 +256,13 @@ export function setupRegions(container, inputs) {
       for (const id of Object.keys(OVERLAY_COLORS)) {
         regions[id] = { x: 0, y: 0, w: imageW, h: imageH };
       }
+      renderAll();
+    },
+
+    updateDisplay(displayW_, displayH_) {
+      if (displayW_ <= 0 || displayH_ <= 0) return;
+      displayW = displayW_;
+      displayH = displayH_;
       renderAll();
     },
 

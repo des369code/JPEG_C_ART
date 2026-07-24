@@ -455,11 +455,15 @@ resetBtn.addEventListener('click', () => {
   statusMsg.textContent = '';
 });
 
-// --- Keep overlay aligned on window / layout resize ---
-window.addEventListener('resize', () => {
-  if (!_imageData) return;
-  const dw = inputContainer.clientWidth;
-  if (dw > 0) {
-    regions.updateImage(_imageData.width, _imageData.height, dw, _imageData.height * (dw / _imageData.width));
-  }
-});
+// --- Keep overlay aligned on any layout change (ResizeObserver) ---
+if (window.ResizeObserver) {
+  const resizeObserver = new ResizeObserver(() => {
+    if (!_imageData) return;
+    const dw = inputContainer.clientWidth;
+    if (dw > 0) {
+      // updateDisplay only recalculates display coords — does NOT reset regions
+      regions.updateDisplay(dw, _imageData.height * (dw / _imageData.width));
+    }
+  });
+  resizeObserver.observe(inputContainer);
+}

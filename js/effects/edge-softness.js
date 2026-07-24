@@ -9,7 +9,7 @@ export const effect = {
 
   apply(ctx, width, height, _region, strength) {
     const maxRadius = (strength / 100) * 6;
-    if (maxRadius < 0.5) return;
+    if (maxRadius < 0.2) return;
 
     // Create blurred copy
     const blurCanvas = document.createElement('canvas');

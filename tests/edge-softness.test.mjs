@@ -137,7 +137,7 @@ console.log('── Edge softness tests ──');
   checkEq((100/100)*6,6,'strength 100 → radius 6px');
   checkEq((50/100)*6,3,'strength 50 → radius 3px');
   checkEq((0/100)*6,0,'strength 0 → radius 0px');
-  check((8/100)*6<0.5,'strength 8 → below early-return threshold');
+  check((3/100)*6<0.2,'strength 3 → below early-return (0.18 < 0.2)');
 }
 
 {

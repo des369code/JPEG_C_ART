@@ -9,7 +9,7 @@ export const effect = {
 
   apply(ctx, width, height, region, strength) {
     const radius = (strength / 100) * 8;
-    if (radius < 0.5) return;
+    if (radius < 0.2) return;
 
     const { x, y, w, h } = region;
     const temp = document.createElement('canvas');

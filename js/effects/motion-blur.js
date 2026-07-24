@@ -11,7 +11,7 @@ export const effect = {
 
   apply(ctx, width, height, region, strength) {
     const maxOffset = (strength / 100) * 8;
-    if (maxOffset < 0.5) return;
+    if (maxOffset < 0.2) return;
 
     const { x, y, w, h } = region;
     const angle = Math.random() * Math.PI * 2;

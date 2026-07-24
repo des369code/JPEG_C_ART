@@ -142,7 +142,7 @@ console.log('── Motion blur tests ──');
   checkEq((100/100)*8, 8, 'strength 100 → offset 8px');
   checkEq((50/100)*8, 4, 'strength 50 → offset 4px');
   checkEq((0/100)*8, 0, 'strength 0 → offset 0px');
-  check((6/100)*8 < 0.5, 'strength 6 → below early-return');
+  check((2/100)*8 < 0.2, 'strength 2 → below early-return (0.16 < 0.2)');
 }
 
 // Test 4: Deterministic with fixed seed
