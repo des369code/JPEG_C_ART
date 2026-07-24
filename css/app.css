@@ -409,60 +409,64 @@ footer p {
   color: var(--text-muted);
 }
 
-/* ── Effects List ─────────────────────────── */
-
-.effects-divider {
-  border-top: 1px solid var(--border);
-  margin: 0.25rem 0;
-}
+/* ── Effect Cards ─────────────────────────── */
 
 #effects-list {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
-  max-height: 420px;
-  overflow-y: auto;
+  gap: 0.375rem;
 }
 
-.effect-row {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  gap: 0.25rem 0.5rem;
+.effect-card {
+  border: 1px solid var(--border);
+  padding: 0.625rem 0.75rem;
+  transition: border-color 0.15s;
+}
+
+.effect-card--enabled {
+  border-color: var(--text-muted);
+}
+
+.effect-card-header {
+  display: flex;
   align-items: center;
-}
-
-.effect-row input[type="checkbox"] {
-  grid-row: 1;
-  grid-column: 1;
-  accent-color: var(--text);
-  width: 15px;
-  height: 15px;
+  gap: 0.5rem;
   cursor: pointer;
+  user-select: none;
 }
 
-.effect-row .effect-label {
-  grid-row: 1;
-  grid-column: 2;
+.effect-toggle {
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  width: 1.25rem;
+  text-align: center;
+}
+
+.effect-card-name {
   font-family: var(--font);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--text);
-  cursor: pointer;
 }
 
-.effect-row .effect-desc {
-  grid-row: 2;
-  grid-column: 2;
+.effect-badge {
   font-family: var(--font);
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 0.125rem 0.375rem;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
-.effect-row input[type="range"] {
-  grid-row: 3;
-  grid-column: 1 / -1;
-  margin-top: 0.25rem;
+.effect-card-body {
+  margin-top: 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.effect-slider {
   width: 100%;
   -webkit-appearance: none;
   appearance: none;
@@ -472,7 +476,7 @@ footer p {
   outline: none;
 }
 
-.effect-row input[type="range"]::-webkit-slider-thumb {
+.effect-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 14px;
@@ -482,7 +486,7 @@ footer p {
   cursor: pointer;
 }
 
-.effect-row input[type="range"]::-moz-range-thumb {
+.effect-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -491,11 +495,67 @@ footer p {
   cursor: pointer;
 }
 
-.effect-strength-label {
+.effect-region-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.effect-region-label {
   font-family: var(--font);
   font-size: 0.6875rem;
   color: var(--text-muted);
-  text-align: right;
+}
+
+.effect-region-values {
+  font-family: var(--font);
+  font-size: 0.6875rem;
+  color: var(--text);
+  flex: 1;
+}
+
+.effect-region-btn {
+  font-family: var(--font);
+  font-size: 0.625rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 0.125rem 0.5rem;
+  cursor: pointer;
+}
+
+.effect-region-btn:hover {
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+
+/* ── Effect Overlay Handles ──────────────── */
+
+.effect-overlay-handle {
+  transition: none;
+  mix-blend-mode: difference;
+}
+
+.effect-overlay-resize {
+  mix-blend-mode: difference;
+}
+
+/* ── Presets ──────────────────────────────── */
+
+.presets-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#preset-select {
+  flex: 1;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.75rem;
+  outline: none;
 }
 
 .btn-secondary {
