@@ -32,7 +32,7 @@ export async function applyEffects(imageData, enabledIds, strengths, region) {
     const strength = strengths[effect.id] ?? effect.defaultStrength;
     if (strength <= 0) continue;
     try {
-      effect.apply(ctx, width, height, { x: rx, y: ry, w: rw, h: rh }, strength);
+      await effect.apply(ctx, width, height, { x: rx, y: ry, w: rw, h: rh }, strength);
     } catch (err) {
       console.error(`Effect "${effect.id}" failed:`, err);
     }
