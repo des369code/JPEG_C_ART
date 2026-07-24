@@ -29,6 +29,7 @@ const downloadBtn = document.getElementById('download-btn');
 const outputSize = document.getElementById('output-size');
 const zoomOverlay = document.getElementById('zoom-overlay');
 const zoomImage = document.getElementById('zoom-image');
+const showAllBtn = document.getElementById('show-all-regions-btn');
 
 // --- State ---
 let currentImageData = null;
@@ -47,6 +48,14 @@ const regionInputs = {
   height: document.getElementById('region-height'),
 };
 const regions = setupRegions(inputContainer, regionInputs);
+
+showAllBtn.addEventListener('click', () => {
+  const showing = regions.toggleShowAll();
+  showAllBtn.textContent = showing ? 'Hide all regions' : 'Show all regions';
+  for (const key of ['left', 'top', 'width', 'height']) {
+    regionInputs[key].disabled = showing;
+  }
+});
 
 // --- Build effect cards ---
 for (const effect of registry) {
