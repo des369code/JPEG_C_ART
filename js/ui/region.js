@@ -40,6 +40,14 @@ export function setupRegions(container, inputs) {
   let rafId = null;
   let showAllOverlays = false;
 
+  // Must be a real function (hoisted) so createHandle's mousedown
+  // handler can reference it.  Object-literal methods are NOT in scope.
+  function setActiveEffect(id) {
+    activeId = id;
+    renderAll();
+    notify();
+  }
+
   function toDisplay(r) {
     const sx = displayW / imageW;
     const sy = displayH / imageH;
@@ -66,14 +74,21 @@ export function setupRegions(container, inputs) {
     handle.addEventListener('mousedown', (e) => {
       setActiveEffect(effectId);
 
-      // Coordinate-based hit test: was the click in the bottom-right
-      // RESIZE_ZONE of the handle?  This is robust against the resize
-      // knob being clipped, overlapped, or the event targeting the
-      // border instead of the child div.
       const rect = handle.getBoundingClientRect();
       const relX = e.clientX - rect.left;
       const relY = e.clientY - rect.top;
-      const isResize = relX > rect.width - RESIZE_ZONE && relY > rect.height - RESIZE_ZONE;
+      const inZone = relX > rect.width - RESIZE_ZONE && relY > rect.height - RESIZE_ZONE;
+      const isResize = inZone;
+
+      console.log('[REGION] mousedown', {
+        effectId,
+        targetClass: e.target.className,
+        handleRect: { w: Math.round(rect.width), h: Math.round(rect.height), l: Math.round(rect.left), t: Math.round(rect.top) },
+        clickRel: { x: Math.round(relX), y: Math.round(relY) },
+        inResizeZone: inZone,
+        verdict: isResize ? 'RESIZE' : 'DRAG',
+        region: { ...(regions[effectId] || {}) },
+      });
 
       if (isResize) {
         resizing = true;
@@ -91,13 +106,11 @@ export function setupRegions(container, inputs) {
 
   function applyDragResize(e) {
     if (!dragging && !resizing) return;
-    if (!activeId) return;
+    if (!activeId) { console.log('[REGION] mousemove SKIP — no activeId'); return; }
     const dx = e.clientX - dragStart.x;
     const dy = e.clientY - dragStart.y;
     const sx = imageW / displayW;
     const sy = imageH / displayH;
-    // Compute from dragRegion (snapshot at mousedown) so repeated
-    // mousemoves don't drift from integer rounding.
     const r = { ...dragRegion };
 
     if (dragging) {
@@ -107,6 +120,16 @@ export function setupRegions(container, inputs) {
       r.w = Math.round(clamp(r.w + dx * sx, 10, imageW - r.x));
       r.h = Math.round(clamp(r.h + dy * sy, 10, imageH - r.y));
     }
+
+    console.log('[REGION] apply', {
+      mode: dragging ? 'drag' : 'resize',
+      mouseDelta: { dx: Math.round(dx), dy: Math.round(dy) },
+      scale: { sx: sx.toFixed(3), sy: sy.toFixed(3) },
+      imageDelta: { dxI: Math.round(dx * sx), dyI: Math.round(dy * sy) },
+      dragRegion,
+      newRegion: r,
+      imageDims: { imageW, imageH, displayW, displayH },
+    });
 
     regions[activeId] = r;
     renderAll();
@@ -196,11 +219,7 @@ export function setupRegions(container, inputs) {
       regions[id] = { x: r.x ?? 0, y: r.y ?? 0, w: r.w ?? imageW, h: r.h ?? imageH };
     },
 
-    setActiveEffect(id) {
-      activeId = id;
-      renderAll();
-      notify();
-    },
+    setActiveEffect,
 
     getActiveEffect() { return activeId; },
 
