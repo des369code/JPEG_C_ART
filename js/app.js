@@ -126,16 +126,15 @@ for (const effect of registry) {
     pctLabel.textContent = `${slider.value}%`;
   });
 
-  // Toggle
+  // Toggle — clicking anywhere on the card header toggles the effect.
+  // When enabling, the region overlay is activated automatically.
   const toggleEffect = () => {
-    const wasEnabled = effectEnabled[effect.id];
-    effectEnabled[effect.id] = !wasEnabled;
+    effectEnabled[effect.id] = !effectEnabled[effect.id];
     toggle.textContent = effectEnabled[effect.id] ? '●' : '○';
     body.style.display = effectEnabled[effect.id] ? '' : 'none';
     card.classList.toggle('effect-card--enabled', effectEnabled[effect.id]);
 
     if (effectEnabled[effect.id]) {
-      // Always activate region when enabling an effect
       regions.setActiveEffect(effect.id);
       updateRegionInputsVisibility(effect.id);
     }
@@ -143,22 +142,11 @@ for (const effect of registry) {
     updateAllOverlays();
   };
 
-  toggle.addEventListener('click', toggleEffect);
-  name.addEventListener('click', toggleEffect);
-
+  // Single handler on header — covers toggle dot, name, and card background.
+  // Skip clicks on interactive children (slider, buttons) so they work normally.
   header.addEventListener('click', (e) => {
-    // Don't toggle if clicking slider or other interactive elements
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
-    const wasEnabled = effectEnabled[effect.id];
-    if (!wasEnabled) {
-      // Enable it
-      toggleEffect();
-    } else {
-      // Already enabled — just activate its region
-      regions.setActiveEffect(effect.id);
-      updateRegionInputsVisibility(effect.id);
-      updateAllOverlays();
-    }
+    toggleEffect();
   });
 
   card.appendChild(header);
