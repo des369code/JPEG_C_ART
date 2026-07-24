@@ -45,7 +45,7 @@ export function setupRegions(container, inputs) {
   function createHandle(effectId, color) {
     const handle = document.createElement('div');
     handle.className = 'effect-overlay-handle';
-    handle.style.cssText = `position:absolute;border:2px solid ${color};cursor:move;pointer-events:auto;`;
+    handle.style.cssText = `position:absolute;border:2px solid ${color};outline:1px solid rgba(0,0,0,0.5);cursor:move;pointer-events:auto;`;
     handle.dataset.effectId = effectId;
 
     const resize = document.createElement('div');
@@ -55,17 +55,24 @@ export function setupRegions(container, inputs) {
     handle.appendChild(resize);
 
     handle.addEventListener('mousedown', (e) => {
-      setActiveEffect(effectId);  // ALWAYS set active, for both drag and resize
-      if (e.target === resize) {
+      console.log('region mousedown', { target: e.target.className, effectId, activeId });
+      setActiveEffect(effectId);
+      // Use data attribute instead of element identity — more reliable across browsers
+      const isResize = e.target === resize || e.target.closest('[data-action="resize"]');
+      if (isResize) {
         resizing = true;
+        console.log('region resize START', { effectId });
       } else {
         dragging = true;
+        console.log('region drag START', { effectId });
       }
       dragStart = { x: e.clientX, y: e.clientY };
-      dragRegion = { ...(regions[effectId] || regions[activeId] || { x: 0, y: 0, w: 200, h: 200 }) };
+      dragRegion = { ...(regions[effectId] || { x: 0, y: 0, w: 200, h: 200 }) };
       e.preventDefault();
       e.stopPropagation();
     });
+
+    resize.dataset.action = 'resize';
 
     return { handle, resize };
   }

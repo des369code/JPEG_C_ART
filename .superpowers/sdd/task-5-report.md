@@ -1,30 +1,32 @@
-# Task 5: Migrate JPEG Artifacts into Effects System — Report
+# Task 5: Rewrite app.js + index.html — Card UI, Per-Effect Regions, Presets
 
-## Status
+**Status:** Complete
 
-- [x] Step 1: `js/effects/jpeg-artifacts.js` created
-- [x] Step 2: `js/effects/pipeline.js` updated — `await effect.apply(...)`
-- [x] Step 3: `js/processor.js` simplified to backward-compat wrapper
-- [x] Step 4: Syntax verified (`node --check` passed for all three files)
+## Changes
 
-## Implementation Summary
+### `js/app.js` — Full rewrite
 
-### Created: `js/effects/jpeg-artifacts.js`
-New effect module exporting:
-- `effect` object with id `jpeg-artifacts`, category `compression`, default strength `50`
-- `async apply()` — extracts region via `getImageData`, re-encodes at degraded JPEG quality, decodes the result via `Image`, composites back
-- Registered automatically via `registry.js` (import was already present on line 22)
+- Import changed from `setupRegion` to `setupRegions` (matching the renamed `region.js` module).
+- Added import for `presets` and `saveCustomPreset` from `./effects/presets.js`.
+- Added `FULL_FRAME` set for effects with no region overlay (vignetting, chromatic-aberration, edge-softness, lens-flare).
+- New state: `effectRegions` object, one per effect.
+- Card-based UI replaces the old checkbox + slider rows:
+  - Each effect gets a card with toggle dot (circle/●), colored dot, name, and optional "Full frame" badge.
+  - Card body with strength slider, hidden until effect is enabled.
+  - Non-full-frame effects get a "Edit region" button and region display.
+  - Clicking toggle or name enables/disables the effect and shows/hides the body.
+- Presets dropdown populated from `presets` array; `presetApply` resets all effects then applies the selected preset.
+- Region change handler: `regions.onRegionChanged` syncs `effectRegions`.
+- Apply function passes `effectStrengths` and `effectRegions` (both objects keyed by effect ID) to `applyEffects`.
+- After applying, calls `saveCustomPreset` with current state.
+- Reset function iterates cards, resets toggles, bodies, sliders, and overlays.
 
-### Modified: `js/effects/pipeline.js`
-The key change: `effect.apply(...)` on line 35 is now `await effect.apply(...)`. This is required because the JPEG artifacts effect is the first and only async effect in the system — without `await`, the Promise would short-circuit and the degradation would never render.
+### `index.html` — Presets dropdown added
 
-### Modified: `js/processor.js`
-Replaced the full 115-line implementation (encode/decode/re-encode logic + helper functions `canvasToBlob`, `blobToImage`, `imageDataToBlob`) with a 12-line backward-compat wrapper that:
-- Imports `applyEffects` from `./effects/pipeline.js`
-- Calls it with only the `jpeg-artifacts` effect enabled
-- `app.js` imports `applyArtifacts from './processor.js'` unchanged
+- Added preset `<select>` and "Apply preset" button after the effects list, wrapped in a `presets-row` div.
 
-## Files
-- `/Users/d.desmaanzephyll/Desktop/JPEG_C_ART/js/effects/jpeg-artifacts.js` (created)
-- `/Users/d.desmaanzephyll/Desktop/JPEG_C_ART/js/effects/pipeline.js` (modified)
-- `/Users/d.desmaanzephyll/Desktop/JPEG_C_ART/js/processor.js` (modified)
+## Verification
+
+- `node --check js/app.js` — syntax OK
+- `curl http://localhost:8000/` — HTTP 200
+- Commit: `e5c5dac` — "feat: card-based effect UI with per-effect regions, presets, and rename"

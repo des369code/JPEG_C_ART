@@ -340,8 +340,7 @@ main {
   border: 2px solid #ffffff;
   cursor: move;
   pointer-events: auto;
-  mix-blend-mode: difference;
-  /* Always visible: inverts against any background */
+  /* mix-blend-mode removed — interferes with pointer events in some browsers */
 }
 
 .resize-handle {
@@ -354,7 +353,6 @@ main {
   border: 1px solid rgba(0, 0, 0, 0.3);
   cursor: nwse-resize;
   pointer-events: auto;
-  mix-blend-mode: difference;
 }
 
 /* ── Output click-to-zoom hint ───────────── */
@@ -555,11 +553,9 @@ footer p {
 
 .effect-overlay-handle {
   transition: none;
-  mix-blend-mode: difference;
 }
 
 .effect-overlay-resize {
-  mix-blend-mode: difference;
 }
 
 /* ── Presets ──────────────────────────────── */
