@@ -18,7 +18,7 @@
  * (Oklch hue 22°–68°) to prevent unnatural color blotching on faces.
  */
 
-import { clamp, computeSkinMask } from '../utils.js';
+import { clamp, computeSkinMask, rgbToYCbCr, ycbcrToRgb } from '../utils.js';
 
 export const effect = {
   id: 'chroma-noise',
@@ -27,12 +27,14 @@ export const effect = {
   description: 'Correlated color-channel noise mimicking real sensor chrominance noise.',
   defaultStrength: 35,
 
+  // JPEG 4:2:0 chroma subsampling averages every 2×2 Cb/Cr block, so
+  // correlation below 2px is largely destroyed after export at quality 0.92.
   extraParams: {
-    correlation: { label: 'Blotch size', min: 0.5, max: 6, step: 0.5, default: 2.5, unit: 'px' },
+    correlation: { label: 'Blotch size', min: 2, max: 6, step: 0.5, default: 3, unit: 'px' },
   },
 
   apply(ctx, width, height, region, strength, extraParams = {}) {
-    const amount = (strength / 100) * 14; // max ~14 units of Cb/Cr offset
+    const amount = (strength / 100) * 16; // compensates for subsampling loss at ≥2px
     if (amount <= 0) return;
 
     const correlation = extraParams.correlation ?? 2.5;
@@ -73,10 +75,7 @@ export const effect = {
     for (let i = 0, mi = 0; i < data.length; i += 4, mi++) {
       const r = data[i], g = data[i + 1], b = data[i + 2];
 
-      // RGB → YCbCr
-      const yy =  0.299 * r + 0.587 * g + 0.114 * b;
-      let cb  = -0.168736 * r - 0.331264 * g + 0.5 * b + 128;
-      let cr  =  0.5 * r - 0.418688 * g - 0.081312 * b + 128;
+      let { y: yy, cb, cr } = rgbToYCbCr(r, g, b);
 
       const cbOffset = (noiseData[i]     - 128) / 128; // -1..1
       const crOffset = (noiseData[i + 1] - 128) / 128;
@@ -87,10 +86,10 @@ export const effect = {
       cb = clamp(cb + cbOffset * amount * protection, 0, 255);
       cr = clamp(cr + crOffset * amount * protection, 0, 255);
 
-      // YCbCr → RGB
-      data[i]     = clamp(yy + 1.402 * (cr - 128), 0, 255);
-      data[i + 1] = clamp(yy - 0.344136 * (cb - 128) - 0.714136 * (cr - 128), 0, 255);
-      data[i + 2] = clamp(yy + 1.772 * (cb - 128), 0, 255);
+      const out = ycbcrToRgb(yy, cb, cr);
+      data[i]     = clamp(out.r, 0, 255);
+      data[i + 1] = clamp(out.g, 0, 255);
+      data[i + 2] = clamp(out.b, 0, 255);
     }
 
     ctx.putImageData(regionImageData, x, y);

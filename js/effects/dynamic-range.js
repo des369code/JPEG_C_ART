@@ -17,10 +17,12 @@
  * Algorithm:
  *   1. Build BT.601 luminance histogram.
  *   2. Find black/white points from percentile tails.
- *   3. For each pixel: stretch luminance, then scale RGB proportionally.
+ *   3. For each pixel: convert RGB → YCbCr, stretch Y, keep Cb/Cr,
+ *      convert back. Chrominance channels pass through untouched,
+ *      avoiding division-by-small-number and per-channel clamp skew.
  */
 
-import { clamp } from '../utils.js';
+import { clamp, rgbToYCbCr, ycbcrToRgb } from '../utils.js';
 
 export const effect = {
   id: 'dynamic-range',
@@ -68,14 +70,14 @@ export const effect = {
 
     const range = whitePoint - blackPoint;
 
-    // --- 3. Luminance-first stretch with proportional RGB scaling ---
-    // Instead of stretching R, G, B independently (which shifts colors),
-    // we stretch luminance and scale each channel by the same ratio.
+    // --- 3. YCbCr luminance-first stretch ---
+    // Convert to YCbCr, stretch only Y, keep Cb/Cr untouched.
+    // This avoids the division-by-small-number and per-channel
+    // clamp skew that a multiplicative RGB ratio would introduce.
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i], g = data[i + 1], b = data[i + 2];
 
-      // Old luminance
-      const oldLum = 0.299 * r + 0.587 * g + 0.114 * b;
+      const { y: oldLum, cb, cr } = rgbToYCbCr(r, g, b);
 
       // Stretched luminance (linear levels operation)
       const newLum = clamp(((oldLum - blackPoint) / range) * 255, 0, 255);
@@ -83,23 +85,10 @@ export const effect = {
       // Blend between original and stretched based on strength
       const blendedLum = oldLum + (newLum - oldLum) * amount;
 
-      // Scale RGB proportionally to preserve chrominance ratios.
-      // If oldLum is 0, just set all channels to blendedLum.
-      let scale;
-      if (oldLum < 0.5) {
-        // Near-black: directly set to blended luminance (gray in deep shadow)
-        scale = 0;
-      } else {
-        scale = blendedLum / oldLum;
-      }
-
-      if (scale === 0) {
-        data[i] = data[i + 1] = data[i + 2] = clamp(Math.round(blendedLum), 0, 255);
-      } else {
-        data[i]     = clamp(Math.round(r * scale), 0, 255);
-        data[i + 1] = clamp(Math.round(g * scale), 0, 255);
-        data[i + 2] = clamp(Math.round(b * scale), 0, 255);
-      }
+      const out = ycbcrToRgb(blendedLum, cb, cr);
+      data[i]     = clamp(Math.round(out.r), 0, 255);
+      data[i + 1] = clamp(Math.round(out.g), 0, 255);
+      data[i + 2] = clamp(Math.round(out.b), 0, 255);
     }
 
     ctx.putImageData(imageData, x, y);

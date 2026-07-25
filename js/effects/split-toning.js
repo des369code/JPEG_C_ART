@@ -18,7 +18,7 @@
  *   4. Overlay-blend the tint onto the original pixel at strength opacity.
  */
 
-import { clamp } from '../utils.js';
+import { clamp, computeSkinMask } from '../utils.js';
 
 export const effect = {
   id: 'split-toning',
@@ -41,6 +41,9 @@ export const effect = {
     const imageData = ctx.getImageData(0, 0, width, height);
     const data = imageData.data;
 
+    // Precompute skin-tone protection mask
+    const skinMask = computeSkinMask(imageData);
+
     // Shadow tint: cool deep blue (R:20, G:50, B:120)
     // Highlight tint: warm golden (R:255, G:210, B:140)
     const SHADOW_R = 20,  SHADOW_G = 50,  SHADOW_B = 120;
@@ -50,7 +53,7 @@ export const effect = {
     // Smaller = sharper transition; 40 gives a smooth blend.
     const TRANSITION = 40;
 
-    for (let i = 0; i < data.length; i += 4) {
+    for (let i = 0, mi = 0; i < data.length; i += 4, mi++) {
       const r = data[i], g = data[i + 1], b = data[i + 2];
 
       // BT.601 luminance
@@ -72,10 +75,14 @@ export const effect = {
       const overlayG = overlayBlend(g, tintG);
       const overlayB = overlayBlend(b, tintB);
 
+      // Skin protection: reduce tint on faces by 60%.
+      // Softer than chroma-noise (70%) — some warmth on skin is natural.
+      const protection = 1.0 - skinMask[mi] * 0.6;
+
       // Mix with original at opacity
-      data[i]     = clamp(r + (overlayR - r) * opacity * 0.4, 0, 255);
-      data[i + 1] = clamp(g + (overlayG - g) * opacity * 0.4, 0, 255);
-      data[i + 2] = clamp(b + (overlayB - b) * opacity * 0.4, 0, 255);
+      data[i]     = clamp(r + (overlayR - r) * opacity * 0.4 * protection, 0, 255);
+      data[i + 1] = clamp(g + (overlayG - g) * opacity * 0.4 * protection, 0, 255);
+      data[i + 2] = clamp(b + (overlayB - b) * opacity * 0.4 * protection, 0, 255);
     }
 
     ctx.putImageData(imageData, 0, 0);

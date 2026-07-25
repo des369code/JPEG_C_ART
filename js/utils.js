@@ -148,6 +148,32 @@ function skinMaskFactor(hue) {
   return 0.5 + 0.5 * Math.cos((Math.PI * d) / SKIN_FALLOFF);
 }
 
+/**
+ * RGB → YCbCr (BT.601, full-range / JFIF).
+ * Used by chroma-noise and dynamic-range effects.
+ * @returns {{ y: number, cb: number, cr: number }}
+ */
+export function rgbToYCbCr(r, g, b) {
+  return {
+    y:  0.299 * r + 0.587 * g + 0.114 * b,
+    cb: -0.168736 * r - 0.331264 * g + 0.5 * b + 128,
+    cr:  0.5 * r - 0.418688 * g - 0.081312 * b + 128,
+  };
+}
+
+/**
+ * YCbCr → RGB (BT.601, full-range / JFIF).
+ * Used by chroma-noise and dynamic-range effects.
+ * @returns {{ r: number, g: number, b: number }}
+ */
+export function ycbcrToRgb(y, cb, cr) {
+  return {
+    r: y + 1.402 * (cr - 128),
+    g: y - 0.344136 * (cb - 128) - 0.714136 * (cr - 128),
+    b: y + 1.772 * (cb - 128),
+  };
+}
+
 export function formatBytes(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1_048_576) return `${(bytes / 1024).toFixed(1)} KB`;
