@@ -8,7 +8,7 @@ import { registry } from './effects/registry.js';
 import { presets, saveCustomPreset } from './effects/presets.js';
 
 // Full-frame effects — no region overlay or inputs
-const FULL_FRAME = new Set(['vignetting', 'chromatic-aberration', 'edge-softness', 'lens-flare']);
+const FULL_FRAME = new Set(['vignetting', 'chromatic-aberration', 'edge-softness', 'lens-flare', 'white-balance-drift', 'dynamic-range', 'split-toning']);
 
 // --- DOM ---
 const dropZone = document.getElementById('drop-zone');
@@ -202,7 +202,9 @@ for (const effect of registry) {
 function getColor(id) {
   const colors = {
     'motion-blur': '#ff6b6b', 'soft-focus': '#ffd93d', 'chromatic-aberration': '#6bcb77',
-    'iso-grain': '#4d96ff', 'dead-pixels': '#ff922b', 'dust-spots': '#cc5de8', 'jpeg-artifacts': '#20c997',
+    'iso-grain': '#4d96ff', 'chroma-noise': '#38d9a9', 'dead-pixels': '#ff922b', 'dust-spots': '#cc5de8',
+    'white-balance-drift': '#f06595', 'dynamic-range': '#748ffc', 'split-toning': '#ff922b',
+    'vibrance': '#da77f2', 'jpeg-artifacts': '#20c997',
   };
   return colors[id] || '#888';
 }

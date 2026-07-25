@@ -1,4 +1,14 @@
-/** Shared helpers: magic bytes, clamp, quality formula */
+/** Shared helpers: magic bytes, clamp, quality formula, color-space utilities */
+
+// ── Skin-tone hue range (Oklch, degrees) ──────────────────────────
+// Human skin hue clusters in a narrow band across ethnicities because
+// it is driven by melanin + hemoglobin absorption spectra.
+// These defaults are based on published color science but should be
+// calibrated against YOUR generated images — sample actual skin-tone
+// pixels and verify they fall inside this range.
+export const SKIN_HUE_MIN = 22;   // soft falloff starts here
+export const SKIN_HUE_MAX = 68;   // soft falloff ends here
+const SKIN_FALLOFF = 10;          // cosine transition width in degrees
 
 const JPEG_MAGIC = new Uint8Array([0xff, 0xd8, 0xff]);
 const MEGAPIXEL_THRESHOLD = 50_000_000; // 50 MP
@@ -65,6 +75,79 @@ export function warnIfLarge(width, height, byteSize) {
  * @param {number} bytes
  * @returns {string}
  */
+/**
+ * Precompute a skin-tone protection mask for an image region.
+ *
+ * Converts each pixel RGB → linear sRGB → Oklab → Oklch hue, then
+ * checks against the skin hue range with soft cosine falloff at the
+ * boundaries so there are no hard seams.
+ *
+ * @param {ImageData} imageData — region pixels (as returned by ctx.getImageData)
+ * @returns {Float32Array} length = pixelCount:
+ *    1.0 = full protection (reduce effect on this pixel)
+ *    0.0 = no protection (apply effect normally)
+ *
+ * Performance: O(n) with one Oklab conversion per pixel. Call ONCE
+ * per effect invocation, then index into the returned array in your
+ * per-pixel loop — do NOT call this inside a loop.
+ */
+export function computeSkinMask(imageData) {
+  const { data, width, height } = imageData;
+  const pixelCount = width * height;
+  const mask = new Float32Array(pixelCount);
+
+  for (let i = 0, mi = 0; i < data.length; i += 4, mi++) {
+    // ── sRGB → linear (gamma expansion) ──
+    const r = srgbToLinear(data[i] / 255);
+    const g = srgbToLinear(data[i + 1] / 255);
+    const b = srgbToLinear(data[i + 2] / 255);
+
+    // ── Linear sRGB → LMS ──
+    const lVal = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+    const mVal = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+    const sVal = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+
+    // ── LMS → Oklab ──
+    const lCbrt = Math.cbrt(lVal);
+    const mCbrt = Math.cbrt(mVal);
+    const sCbrt = Math.cbrt(sVal);
+
+    const A = 1.9779984951 * lCbrt - 2.4285922050 * mCbrt + 0.4505937099 * sCbrt;
+    const B = 0.0259040371 * lCbrt + 0.7827717662 * mCbrt - 0.8086757660 * sCbrt;
+
+    // ── Oklab → Oklch hue (degrees) ──
+    const hue = (Math.atan2(B, A) * 180) / Math.PI;
+    const hue360 = hue < 0 ? hue + 360 : hue;
+
+    // ── Soft skin mask with cosine falloff ──
+    mask[mi] = skinMaskFactor(hue360);
+  }
+
+  return mask;
+}
+
+/** sRGB gamma expansion (component, 0–1). */
+function srgbToLinear(c) {
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+/**
+ * Cosine-falloff skin protection factor for an Oklch hue.
+ * Returns 0.0–1.0.
+ */
+function skinMaskFactor(hue) {
+  if (hue >= SKIN_HUE_MIN && hue <= SKIN_HUE_MAX) return 1.0;
+  if (hue < SKIN_HUE_MIN) {
+    const d = SKIN_HUE_MIN - hue;
+    if (d >= SKIN_FALLOFF) return 0.0;
+    return 0.5 + 0.5 * Math.cos((Math.PI * d) / SKIN_FALLOFF);
+  }
+  // hue > SKIN_HUE_MAX
+  const d = hue - SKIN_HUE_MAX;
+  if (d >= SKIN_FALLOFF) return 0.0;
+  return 0.5 + 0.5 * Math.cos((Math.PI * d) / SKIN_FALLOFF);
+}
+
 export function formatBytes(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1_048_576) return `${(bytes / 1024).toFixed(1)} KB`;
