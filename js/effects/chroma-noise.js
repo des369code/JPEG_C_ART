@@ -24,13 +24,13 @@ export const effect = {
   id: 'chroma-noise',
   name: 'Chroma noise',
   category: 'sensor',
-  description: 'Correlated color-channel noise mimicking real sensor chrominance noise.',
+  description: '↑ stronger colour noise blotches. ↓ cleaner colour. Blotch size controls noise texture.',
   defaultStrength: 35,
 
   // JPEG 4:2:0 chroma subsampling averages every 2×2 Cb/Cr block, so
   // correlation below 2px is largely destroyed after export at quality 0.92.
   extraParams: {
-    correlation: { label: 'Blotch size', min: 2, max: 6, step: 0.5, default: 3, unit: 'px' },
+    correlation: { label: 'Blotch size', min: 2, max: 6, step: 0.5, default: 3, unit: 'px', desc: 'Higher = larger, softer colour blotches. Lower = tighter, finer noise. Below 2px lost to JPEG compression.' },
   },
 
   apply(ctx, width, height, region, strength, extraParams = {}) {

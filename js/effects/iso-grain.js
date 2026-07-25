@@ -16,11 +16,11 @@ export const effect = {
   id: 'iso-grain',
   name: 'ISO grain',
   category: 'sensor',
-  description: 'High-ISO luminance noise with signal-dependent shadow emphasis.',
+  description: '↑ heavier luminance noise (high ISO). ↓ cleaner image. Shadow bias controls shadow vs highlight noise.',
   defaultStrength: 50,
 
   extraParams: {
-    shadowBias: { label: 'Shadow bias', min: 0, max: 100, step: 5, default: 50, unit: '%' },
+    shadowBias: { label: 'Shadow bias', min: 0, max: 100, step: 5, default: 50, unit: '%', desc: 'Higher = noise concentrated in shadows (realistic). Lower = uniform noise across all tones.' },
   },
 
   apply(ctx, width, height, region, strength, extraParams = {}) {

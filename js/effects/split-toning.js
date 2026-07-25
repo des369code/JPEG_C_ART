@@ -24,11 +24,11 @@ export const effect = {
   id: 'split-toning',
   name: 'Split toning',
   category: 'color',
-  description: 'Cool-blue shadows + warm-golden highlights — iPhone\'s tonal color signature.',
+  description: '↑ stronger cool-shadow + warm-highlight colour grading. ↓ subtler tonal tint. Balance shifts the cool/warm crossover.',
   defaultStrength: 30,
 
   extraParams: {
-    balance: { label: 'Balance', min: 10, max: 90, step: 1, default: 50, unit: '%' },
+    balance: { label: 'Balance', min: 10, max: 90, step: 1, default: 50, unit: '%', desc: 'Higher = crossover moves toward highlights (more cool). Lower = toward shadows (more warm).' },
   },
 
   apply(ctx, width, height, _region, strength, extraParams = {}) {

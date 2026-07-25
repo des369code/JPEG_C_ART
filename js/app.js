@@ -131,6 +131,14 @@ for (const effect of registry) {
     pctLabel.textContent = `${slider.value}%`;
   });
 
+  // Effect description hint
+  if (effect.description) {
+    const descEl = document.createElement('div');
+    descEl.style.cssText = 'font-size:0.6875rem;color:var(--text-muted);line-height:1.4;';
+    descEl.textContent = effect.description;
+    body.appendChild(descEl);
+  }
+
   // Extra per-effect parameters (e.g. chroma-noise correlation, iso-grain shadowBias)
   if (effect.extraParams) {
     effectExtraParams[effect.id] = {};
@@ -169,6 +177,14 @@ for (const effect of registry) {
       });
 
       body.appendChild(extraSlider);
+
+      // Extra param description hint
+      if (cfg.desc) {
+        const paramDesc = document.createElement('div');
+        paramDesc.style.cssText = 'font-size:0.625rem;color:var(--text-muted);line-height:1.35;margin-bottom:0.25rem;';
+        paramDesc.textContent = cfg.desc;
+        body.appendChild(paramDesc);
+      }
     }
   }
 

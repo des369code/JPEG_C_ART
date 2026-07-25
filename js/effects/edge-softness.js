@@ -4,7 +4,7 @@ export const effect = {
   id: 'edge-softness',
   name: 'Edge softness',
   category: 'lens',
-  description: 'Progressive blur toward frame edges from lens field curvature.',
+  description: '↑ more blur toward frame edges. ↓ sharper edges.',
   defaultStrength: 40,
 
   apply(ctx, width, height, _region, strength) {

@@ -6,7 +6,7 @@ export const effect = {
   id: 'dust-spots',
   name: 'Dust spots',
   category: 'sensor',
-  description: 'Small dark spots from dust on the camera sensor.',
+  description: '↑ more and larger dust spots on the sensor. ↓ fewer, smaller spots.',
   defaultStrength: 25,
 
   apply(ctx, width, height, region, strength) {

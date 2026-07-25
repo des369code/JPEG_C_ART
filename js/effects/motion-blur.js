@@ -6,7 +6,7 @@ export const effect = {
   id: 'motion-blur',
   name: 'Motion blur',
   category: 'focus',
-  description: 'Directional blur from camera shake or slow shutter speed.',
+  description: '↑ longer motion trails from camera shake. ↓ shorter trails.',
   defaultStrength: 30,
 
   apply(ctx, width, height, region, strength) {

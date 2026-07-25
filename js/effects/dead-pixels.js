@@ -6,7 +6,7 @@ export const effect = {
   id: 'dead-pixels',
   name: 'Dead/hot pixels',
   category: 'sensor',
-  description: 'Stuck bright or dark pixels from sensor manufacturing defects.',
+  description: '↑ more stuck bright/dark sensor pixels. ↓ fewer defects.',
   defaultStrength: 20,
 
   apply(ctx, width, height, region, strength) {
