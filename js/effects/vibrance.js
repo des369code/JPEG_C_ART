@@ -81,14 +81,16 @@ export const effect = {
       A *= boost;
       B *= boost;
 
-      // ── Oklab → LMS → linear sRGB ──
-      const lCbrt2 = Math.cbrt(L + 0.3963377774 * A + 0.2158037573 * B);
-      const mCbrt2 = Math.cbrt(L - 0.1055613458 * A - 0.0638541728 * B);
-      const sCbrt2 = Math.cbrt(L - 0.0894841775 * A - 1.2914855480 * B);
+      // ── Oklab → LMS (inverse) → linear sRGB ──
+      // The Oklab inverse formulas produce the *cube roots* of LMS,
+      // so we cube them directly — no additional Math.cbrt needed.
+      let lr2 = L + 0.3963377774 * A + 0.2158037573 * B; // l' = cbrt(L)
+      let lg2 = L - 0.1055613458 * A - 0.0638541728 * B; // m' = cbrt(M)
+      let lb2 = L - 0.0894841775 * A - 1.2914855480 * B; // s' = cbrt(S)
 
-      let lr2 = lCbrt2 * lCbrt2 * lCbrt2;
-      let lg2 = mCbrt2 * mCbrt2 * mCbrt2;
-      let lb2 = sCbrt2 * sCbrt2 * sCbrt2;
+      lr2 = lr2 * lr2 * lr2; // cube to get LMS L
+      lg2 = lg2 * lg2 * lg2;
+      lb2 = lb2 * lb2 * lb2;
 
       // LMS → linear sRGB (boosted)
       let lr3 =  4.0767416621 * lr2 - 3.3077115913 * lg2 + 0.2309699292 * lb2;
