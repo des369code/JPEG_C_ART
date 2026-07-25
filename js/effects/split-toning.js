@@ -28,7 +28,7 @@ export const effect = {
   defaultStrength: 30,
 
   extraParams: {
-    balance: { label: 'Balance', min: 10, max: 90, step: 1, default: 50, unit: '%', desc: '↑ more of the image gets the cool blue tone. ↓ more gets the warm golden tone.' },
+    balance: { label: 'Balance', min: 10, max: 90, step: 1, default: 50, unit: '%', desc: 'Higher = crossover moves toward highlights (more cool). Lower = toward shadows (more warm).' },
   },
 
   apply(ctx, width, height, _region, strength, extraParams = {}) {

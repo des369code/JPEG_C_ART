@@ -4,7 +4,7 @@ export const effect = {
   id: 'soft-focus',
   name: 'Soft focus',
   category: 'focus',
-  description: '↑ blurrier, like the camera missed focus. ↓ slightly softer but still sharp.',
+  description: '↑ heavier Gaussian blur (missed focus look). ↓ subtle softening.',
   defaultStrength: 25,
 
   apply(ctx, width, height, region, strength) {

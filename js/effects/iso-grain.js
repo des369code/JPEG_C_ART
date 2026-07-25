@@ -16,11 +16,11 @@ export const effect = {
   id: 'iso-grain',
   name: 'ISO grain',
   category: 'sensor',
-  description: '↑ more grainy, speckled texture like a photo taken in low light. ↓ smoother, cleaner image.',
+  description: '↑ heavier luminance noise (high ISO). ↓ cleaner image.',
   defaultStrength: 50,
 
   extraParams: {
-    shadowBias: { label: 'Shadow bias', min: 0, max: 100, step: 5, default: 50, unit: '%', desc: '↑ grain mostly in dark areas (like a real camera). ↓ same amount of grain everywhere.' },
+    shadowBias: { label: 'Shadow bias', min: 0, max: 100, step: 5, default: 50, unit: '%', desc: 'Higher = noise concentrated in shadows (realistic). Lower = uniform noise across all tones.' },
   },
 
   apply(ctx, width, height, region, strength, extraParams = {}) {

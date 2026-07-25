@@ -6,7 +6,7 @@ export const effect = {
   id: 'motion-blur',
   name: 'Motion blur',
   category: 'focus',
-  description: '↑ more smearing and streaking like the camera moved during the shot. ↓ less visible movement.',
+  description: '↑ longer motion trails from camera shake. ↓ shorter trails.',
   defaultStrength: 30,
 
   apply(ctx, width, height, region, strength) {

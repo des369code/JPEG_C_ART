@@ -27,7 +27,7 @@ export const effect = {
   id: 'white-balance-drift',
   name: 'White balance drift',
   category: 'color',
-  description: '↑ more visible warm and cool colour zones like mixed indoor and outdoor light. ↓ more even, balanced colours.',
+  description: '↑ stronger warm/cool colour cast across frame. ↓ subtler mixed-lighting effect.',
   defaultStrength: 25,
 
   apply(ctx, width, height, _region, strength) {

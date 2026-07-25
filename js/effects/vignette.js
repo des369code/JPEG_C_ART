@@ -4,7 +4,7 @@ export const effect = {
   id: 'vignetting',
   name: 'Vignetting',
   category: 'lens',
-  description: '↑ darker corners and edges (like peeking through a tube). ↓ lighter, more natural edges.',
+  description: '↑ stronger darkening at edges/corners. ↓ subtler falloff.',
   defaultStrength: 35,
 
   apply(ctx, width, height, _region, strength) {
