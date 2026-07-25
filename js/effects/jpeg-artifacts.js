@@ -6,7 +6,7 @@ export const effect = {
   id: 'jpeg-artifacts',
   name: 'JPEG artifacts',
   category: 'compression',
-  description: '↑ heavier compression blocking, ringing, and colour banding. ↓ subtler artifacts.',
+  description: '↑ blockier, pixelated look like a heavily compressed image. ↓ cleaner, sharper image.',
   defaultStrength: 50,
 
   async apply(ctx, width, height, region, strength) {

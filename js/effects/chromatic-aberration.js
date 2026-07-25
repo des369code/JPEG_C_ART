@@ -4,7 +4,7 @@ export const effect = {
   id: 'chromatic-aberration',
   name: 'Chromatic aberration',
   category: 'lens',
-  description: '↑ stronger red/blue colour fringing on contrast edges. ↓ subtler fringing.',
+  description: '↑ more rainbow-coloured edges around objects. ↓ cleaner, less colourful edges.',
   defaultStrength: 40,
 
   apply(ctx, width, height, _region, strength) {

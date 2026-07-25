@@ -4,7 +4,7 @@ export const effect = {
   id: 'lens-flare',
   name: 'Lens flare',
   category: 'lens',
-  description: '↑ brighter internal reflections and haze. ↓ faint ghosts only.',
+  description: '↑ more light streaks and glowing circles across the image. ↓ faint, barely visible reflections.',
   defaultStrength: 30,
 
   apply(ctx, width, height, _region, strength) {

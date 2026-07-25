@@ -28,11 +28,11 @@ export const effect = {
   id: 'dynamic-range',
   name: 'Dynamic range stretch',
   category: 'color',
-  description: '↑ more contrast with deeper shadows + brighter highlights. ↓ subtler stretch. Clip % controls how many pixels hit pure black/white.',
+  description: '↑ punchier look with deeper blacks and brighter whites. ↓ flatter, more muted contrast.',
   defaultStrength: 30,
 
   extraParams: {
-    percentile: { label: 'Clip percentile', min: 0.05, max: 2, step: 0.05, default: 0.3, unit: '%', desc: 'Higher = more pixels clipped to pure black/white (stronger). Lower = subtler, preserves more detail.' },
+    percentile: { label: 'Clip percentile', min: 0.05, max: 2, step: 0.05, default: 0.3, unit: '%', desc: '↑ more areas become pure black or pure white. ↓ keeps more shadow and highlight detail.' },
   },
 
   apply(ctx, width, height, region, strength, extraParams = {}) {

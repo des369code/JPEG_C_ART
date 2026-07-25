@@ -24,11 +24,11 @@ export const effect = {
   id: 'split-toning',
   name: 'Split toning',
   category: 'color',
-  description: '↑ stronger cool-shadow + warm-highlight colour grading. ↓ subtler tonal tint. Balance shifts the cool/warm crossover.',
+  description: '↑ stronger blue-ish dark areas and golden bright areas like a phone photo. ↓ more natural, even colours.',
   defaultStrength: 30,
 
   extraParams: {
-    balance: { label: 'Balance', min: 10, max: 90, step: 1, default: 50, unit: '%', desc: 'Higher = crossover moves toward highlights (more cool). Lower = toward shadows (more warm).' },
+    balance: { label: 'Balance', min: 10, max: 90, step: 1, default: 50, unit: '%', desc: '↑ more of the image gets the cool blue tone. ↓ more gets the warm golden tone.' },
   },
 
   apply(ctx, width, height, _region, strength, extraParams = {}) {
