@@ -1,6 +1,6 @@
-/** File drop/click handler, JPEG validation, decode to ImageData */
+/** File drop/click handler, multi-format image validation, decode to ImageData */
 
-import { isJPEG, warnIfLarge, formatBytes } from '../utils.js';
+import { warnIfLarge, formatBytes } from '../utils.js';
 
 /**
  * Set up file upload via drag-and-drop and file input click.
@@ -38,10 +38,11 @@ export function setupUpload(dropZone, fileInput, onImageLoaded, onError) {
 }
 
 /**
- * Validate and decode a JPEG file.
+ * Validate and decode an image file. Accepts JPEG, PNG, and HEIC.
+ * The browser's native Image decoder is the final authority —
+ * if the browser can decode it, we accept it.
  */
 function handleFile(file, onImageLoaded, onError) {
-  // Check file extension / type
   if (!file.type.startsWith('image/')) {
     onError('Please select an image file.');
     return;
@@ -51,12 +52,6 @@ function handleFile(file, onImageLoaded, onError) {
 
   reader.onload = () => {
     const buffer = reader.result; // ArrayBuffer
-
-    // Validate JPEG magic bytes
-    if (!isJPEG(buffer)) {
-      onError('Please use a JPEG image (JPG/JPEG format).');
-      return;
-    }
 
     // Decode via browser image decoder
     const blob = new Blob([buffer], { type: file.type });
@@ -85,7 +80,7 @@ function handleFile(file, onImageLoaded, onError) {
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      onError('This JPEG format is not supported. Try a baseline JPEG.');
+      onError('This image format is not supported by your browser. Try JPEG or PNG.');
     };
 
     img.src = url;

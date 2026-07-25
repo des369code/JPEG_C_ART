@@ -47,7 +47,7 @@ export const presets = [
     name: 'AI Realism (Colour Corrected)',
     description:
       'Targets AI-vs-real color tells: chroma noise, split-toning, signal grain, ' +
-      'dynamic range, vibrance, WB drift, and light JPEG. Use as baseline QA pass; ' +
+      'dynamic range, WB drift, and light JPEG. Use as baseline QA pass; ' +
       'layer a lens/film preset on top if the shoot calls for it.',
     effects: {
       'chroma-noise':        { enabled: true, strength: 30 },
@@ -55,7 +55,6 @@ export const presets = [
       'white-balance-drift': { enabled: true, strength: 20 },
       'dynamic-range':       { enabled: true, strength: 25 },
       'split-toning':        { enabled: true, strength: 30 },
-      'vibrance':            { enabled: true, strength: 35 },
       'jpeg-artifacts':      { enabled: true, strength: 25 },
     },
   },

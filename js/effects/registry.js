@@ -19,15 +19,11 @@ import { effect as chromaNoise } from './chroma-noise.js';
 import { effect as deadPixels } from './dead-pixels.js';
 import { effect as dustSpots } from './dust-spots.js';
 
-// Color / ISP effects — applied after sensor, before sharpening,
+// Color / ISP effects — applied after sensor,
 // mirroring where a real camera's image signal processor sits.
 import { effect as whiteBalanceDrift } from './white-balance-drift.js';
 import { effect as dynamicRange } from './dynamic-range.js';
 import { effect as splitToning } from './split-toning.js';
-import { effect as vibrance } from './vibrance.js';
-
-// Sharpening
-import { effect as unsharpMask } from './unsharp-mask.js';
 
 // Compression
 import { effect as jpegArtifacts } from './jpeg-artifacts.js';
@@ -47,7 +43,5 @@ export const registry = [
   whiteBalanceDrift,
   dynamicRange,
   splitToning,
-  vibrance,
-  unsharpMask,
   jpegArtifacts,
 ];

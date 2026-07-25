@@ -131,7 +131,7 @@ for (const effect of registry) {
     pctLabel.textContent = `${slider.value}%`;
   });
 
-  // Extra per-effect parameters (e.g. unsharp-mask radius, threshold)
+  // Extra per-effect parameters (e.g. chroma-noise correlation, iso-grain shadowBias)
   if (effect.extraParams) {
     effectExtraParams[effect.id] = {};
     for (const [key, cfg] of Object.entries(effect.extraParams)) {
@@ -204,7 +204,7 @@ function getColor(id) {
     'motion-blur': '#ff6b6b', 'soft-focus': '#ffd93d', 'chromatic-aberration': '#6bcb77',
     'iso-grain': '#4d96ff', 'chroma-noise': '#38d9a9', 'dead-pixels': '#ff922b', 'dust-spots': '#cc5de8',
     'white-balance-drift': '#f06595', 'dynamic-range': '#748ffc', 'split-toning': '#ff922b',
-    'vibrance': '#da77f2', 'jpeg-artifacts': '#20c997',
+    'jpeg-artifacts': '#20c997',
   };
   return colors[id] || '#888';
 }
